@@ -19,6 +19,9 @@ const Input = () => {
   const canvasPoseRef = useRef<HTMLCanvasElement>(null);
   const resultsRef = useRef<HolisticResults | null>(null);
 
+  const [previous, setPrevious] = useState('') // 웹소켓으로부터 받은 이전 단어
+  // const [intervalTime, setIntervalTime] = useState(1000/30);
+
   const [loading, setLoading] = useState<boolean>(true);
   const handleUserMedia = () => setTimeout(() => setLoading(false), 1_000);
   const [text, setText] = useRecoilState(resultText);
@@ -28,7 +31,11 @@ const Input = () => {
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
     setText("");
+    setPrevious("");
   };
+
+  useEffect(()=>{console.log("디버그!!", previous)}, [previous]); // 디버깅용
+
 
   /*  랜드마크들의 좌표를 콘솔에 출력 및 websocket으로 전달 */
   const OutputData = useCallback(() => {
@@ -63,7 +70,7 @@ const Input = () => {
   }, [webcamRef]);
   useEffect(() => {
     if (!isChecked) {
-      const interval = setInterval(capture, 1000 / 30);
+      const interval = setInterval(capture, 1000/30);
       return () => clearInterval(interval);
     } else {
       const interval = setInterval(OutputData, 1000);
@@ -191,14 +198,16 @@ const Input = () => {
   //     socketRef.current.close();
   //   };
   // }, [isChecked]);
-
+  
   socketRef.current.onmessage = (event) => {
     console.log(`receive message: ${event.data}`);
     const jsonString = JSON.parse(event.data);
-    if (isChecked) {
-      setText(text + jsonString.result);
-    } else {
-      setText(text + jsonString.result);
+    if (!isChecked){
+      if (previous !== jsonString.result){
+        if (jsonString.result==='') return;
+        setText(text + ' ' + jsonString.result);
+        setPrevious(jsonString.result)
+      }      
     }
     console.log(text);
   };
@@ -207,12 +216,11 @@ const Input = () => {
     const jsonString = JSON.parse(event.data);
     if (isChecked) {
       setText(text + jsonString.result);
-    } else {
-      setText(text + jsonString.result);
     }
     console.log(text);
   };
 
+  
   useEffect(() => {
     socketRef.current.onopen = () => {
       console.log("ws connected");
@@ -220,17 +228,7 @@ const Input = () => {
     socketRef.current.onclose = () => {
       console.log("ws closed");
     };
-    socketRef.current.onmessage = (event) => {
-      console.log(`receive message: ${event.data}`);
-      const jsonString = JSON.parse(event.data);
-      if (isChecked) {
-        setText(text + jsonString.result);
-      } else {
-        setText(text + jsonString.result);
-      }
 
-      console.log(text);
-    };
     return () => {
       socketRef.current.close();
     };
@@ -242,17 +240,6 @@ const Input = () => {
     };
     socketRef_hands.current.onclose = () => {
       console.log("ws closed");
-    };
-    socketRef_hands.current.onmessage = (event) => {
-      console.log(`receive message: ${event.data}`);
-      const jsonString = JSON.parse(event.data);
-      if (isChecked) {
-        setText(text + jsonString.result);
-      } else {
-        setText(text + jsonString.result);
-      }
-
-      console.log(text);
     };
     return () => {
       socketRef_hands.current.close();

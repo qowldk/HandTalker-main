@@ -24,6 +24,6 @@ front, server 폴더에서 npm install
 
 server에서 npm run serve 명령어 백 활성화
 
-ML 좌표값받아서출력(8081 포트), main(8080 포트) 파일 실행
+ML main_8081(8081 포트), main(8080 포트) 파일 실행
 
 front 에서 npm run start
