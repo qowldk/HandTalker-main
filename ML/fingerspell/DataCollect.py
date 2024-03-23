@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+import os
 """
 웹캠에서 손을 감지하고, 손의 각도를 계산하여 그 값을 파일에 저장
 """
@@ -61,7 +62,9 @@ with mp_hands.Hands(
                 label = input("라벨을 입력하세요 (예: open_hand, closed_fist, peace_sign 등): ")
 
                 # 라벨과 각도 값을 텍스트 파일에 저장
-                with open('hand_data_with_labels.txt', 'a') as file:
+                script_directory = os.path.dirname(os.path.abspath(__file__))
+                PATH = os.path.join(script_directory, 'dataSet_ko.txt')
+                with open(PATH, 'a') as file:
                     file.write(f"{','.join(str(a) for a in angle)},{label}\n")
 
         elif key == 27:  # ESC 키를 누르면 루프 종료

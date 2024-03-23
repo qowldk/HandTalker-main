@@ -1,5 +1,5 @@
 import { FaArrowRightLong } from "react-icons/fa6";
-import Input from "./Input";
+import Input, {ChildProps} from "./Input";
 import {
   translateState,
   resultText,
@@ -8,7 +8,7 @@ import {
 import { useRecoilState, useRecoilValue } from "recoil";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import discord from "../../../assets/icons/discord.webp";
+// import discord from "../../../assets/icons/discord.webp";
 import { BiCopy, BiRevision } from "react-icons/bi";
 import Swal from "sweetalert2";
 import ConfigModal from "../config/ConfigModal";
@@ -26,6 +26,16 @@ const Translate = () => {
     setTranslate(true);
   };
 
+
+  const childComponentRef = useRef<ChildProps>(null);
+
+  const generate_sentence = ()=>{
+    if (childComponentRef.current) {
+      childComponentRef?.current?.send_words();
+    }
+  }
+
+
   const webcamRef = useRef<Webcam>(null);
   useEffect(() => {
     if (webcamRef.current?.video) {
@@ -35,6 +45,8 @@ const Translate = () => {
       webcamRef.current.video.srcObject = null;
     }
   }, [translate]);
+
+
 
   const [text, setText] = useRecoilState(resultText);
 
@@ -80,6 +92,8 @@ const Translate = () => {
     },
   });
 
+
+
   return (
     <div className="mt-[5rem] md:mt-[7rem] flex flex-col items-center justify-start w-full h-full mx-auto mb-[4rem]">
       {openModal && <ConfigModal onOpenModal={onModalAlert} />}
@@ -90,7 +104,7 @@ const Translate = () => {
         연동 설정
       </button>
       <div className="flex flex-col items-center justify-center mt-2 md:flex-row">
-        {translate ? <Input /> : <NotTranslating />}
+        {translate ? <Input ref={childComponentRef}/> : <NotTranslating />}
         <p className="hidden md:block ml-[40px] text-6xl text-gray-200">
           <FaArrowRightLong />
         </p>
@@ -117,7 +131,7 @@ const Translate = () => {
               >
                 <BiRevision />
               </button>
-              <button
+              {/* <button
                 onClick={SendMessage}
                 className="ml-4 md:ml-0 flex flex-row justify-center items-center rounded-xl md:min-w-[16rem] w-[11rem] h-[2.7rem] md:w-[16rem] xl:w-[18.75rem] md:h-[3rem] xl:h-[3.2rem] bg-[#5865f2] text-white font-main text-xl"
               >
@@ -127,6 +141,12 @@ const Translate = () => {
                   className="w-[30px] md:w-[40px] xl:w-[50px] mr-[5px]"
                 />
                 디스코드로 전송
+              </button> */}
+              <button
+                onClick={generate_sentence}
+                className="ml-4 md:ml-0 flex flex-row justify-center items-center rounded-xl md:min-w-[16rem] w-[11rem] h-[2.7rem] md:w-[16rem] xl:w-[18.75rem] md:h-[3rem] xl:h-[3.2rem] bg-[#5865f2] text-white font-main text-xl"
+              >
+                generate!!
               </button>
             </div>
           </div>

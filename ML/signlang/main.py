@@ -56,34 +56,42 @@ model = load_model(MODEL_PATH)
 data_file_list = os.listdir(dataset_directory)
 data_file_list = sorted(data_file_list, reverse=True)
 
-actions = []
-labels = []
+actions = {}
 for file_name in data_file_list:
     parts = file_name.split("_")
     if parts[1] not in actions:
-        labels.append(parts[0]) # 파일 목록(npy)에서 단어에 해당하는 라벨 추출
-        actions.append(parts[1]) # 파일 목록(npy)에서 단어 추출
+        actions[int(parts[0])] = parts[1]
+        # actions.append((parts[1], parts[0])) # 파일 목록(npy)에서 단어 추출
 
 # actions 콘솔 출력
-for label, action in zip(labels, actions):
-    print(action, ':', label)
+# for action, label in actions:
+#     print(action, ':', label)
+print(actions)
 
 
 sentence_length = 10
 seq_length = 30
 
+extra_time = 2.5 # 다음 동작 전달까지 텀
+
 
 async def handle_client(websocket, path):
     try:
-        sentence = []  # 현재 디버깅 용, 감지 단어 리스트 콘솔 출력
+        # sentence = []  # 현재 디버깅 용, 감지 단어 리스트 콘솔 출력
         seq = []
         action_seq = [] 
+        previous = '' # 이전 단어
+
+        dc=0 # debug_count
 
         mp_hands = mp.solutions.hands
         hands = mp_hands.Hands( 
         max_num_hands=2,
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.5)
+        min_detection_confidence=0.4,
+        min_tracking_confidence=0.4)
+
+        extra_time_start = time.time() # for extra_time
+
         while True:
             message = await websocket.recv()
             # print("debug: message")
@@ -97,19 +105,19 @@ async def handle_client(websocket, path):
                 # print(f"result: {results}")
 
             if result.multi_hand_landmarks is not None:
-                for res in result.multi_hand_landmarks:
+                for res in result.multi_hand_landmarks: # 감지된 손의 수만큼 반복
                     joint = np.zeros((21, 4))
                     for j, lm in enumerate(res.landmark):
-                        joint[j] = [lm.x, lm.y, lm.z, lm.visibility]
+                        joint[j] = [lm.x, lm.y, lm.z, lm.visibility] # visibility: 신뢰도 (0~1)
 
-                    # joint 간 각도 계산
+                    # 각 관절의 벡터 계산
                     v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19], :3] # Parent joint
                     v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], :3] # Child joint
                     v = v2 - v1 # [20, 3]
                     # 정규화
                     v = v / np.linalg.norm(v, axis=1)[:, np.newaxis]
 
-                    # Get angle using arcos of dot product
+                    # 내적 arcos으로 각도 계산
                     angle = np.arccos(np.einsum('nt,nt->n',
                         v[[0,1,2,4,5,6,8,9,10,12,13,14,16,17,18],:], 
                         v[[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],:])) # [15,]
@@ -122,22 +130,33 @@ async def handle_client(websocket, path):
                     # print("debug2", len(seq))
 
 
-                    if len(seq) < seq_length:
+                    dc+=1 
+                    print(dc, "debug1.seq크기:", len(seq), end = "__")
+
+                    if len(seq) < seq_length: # 시퀀스 최소치가 쌓인 이후부터 판별
                         continue
 
-                    if len(seq)>seq_length*100:
-                        seq=seq[-seq_length-1:]
+
+                    if len(seq)>seq_length*100:  # 과도하게 쌓임 방지
+                        seq=seq[-seq_length:]
+                    
+                    # 시퀀스 데이터를 신경망 모델에 입력으로 사용할 수 있는 형태로 변환
                     input_data = np.expand_dims(np.array(seq[-seq_length:], dtype=np.float32), axis=0)
 
-                    y_pred = model.predict(input_data).squeeze()
+                    y_pred = model.predict(input_data).squeeze() # 각 동작에 대한 예측 결과 (각각의 확률)
 
-                    i_pred = int(np.argmax(y_pred))
-                    conf = y_pred[i_pred]
+                    i_pred = int(np.argmax(y_pred)) # 최댓값 인덱스: 예측값이 가장 높은 값(동작)의 인덱스
+                    conf = y_pred[i_pred] # 가장 확률 높은 동작의 확률이
 
-                    if conf < 0.9:
+                    if conf < 0.9:   # 90% 이상일 때만 수행
                         continue
 
+                    # debug
+                    print("debug2.예측동작인덱스:", i_pred)
+
+
                     action = actions[i_pred]
+                    ####
                     action_seq.append(action)
 
                     if len(action_seq) < 3:
@@ -146,17 +165,40 @@ async def handle_client(websocket, path):
                     this_action = ''
                     if action_seq[-1] == action_seq[-2] == action_seq[-3]:
                         this_action = action
+                    ####
+                    # debug
+                    print(dc, "debug3.예측동작(출력동작):", this_action)
 
+                    seq=[]
+                    
                     
                     # print("DEBUG", this_action)
-                    if this_action !='':      
-                        sentence.append(this_action)
-                    if len(sentence) > sentence_length:
-                        sentence = sentence[-sentence_length:]
+                    # if this_action !='':      
+                    #     sentence.append(this_action)
+                    # if len(sentence) > sentence_length:
+                    #     sentence = sentence[-sentence_length:]
                         # print(' '.join(sentence))
+
+                    print("send?1")
+                    # if time.time() - extra_time_start < extra_time or action=='':  # 데이터 전달 최소 텀
+                    if time.time() - extra_time_start < extra_time or this_action=='':  # 데이터 전달 최소 텀
+                        continue
+                    extra_time_start = time.time()
+                    print("send?2")
+
+
+                    # print("왜멈춰?1 ", action)
+                    # print("왜멈춰?2 ", previous, action, previous==action)
+
+                    if previous == this_action: continue  # 중복 전달 회피  ???
+                    previous = this_action
+                    # if previous == action: continue  # 중복 전달 회피  ???
+                    # previous = action
+                    print("보냄?3")
 
 
                     result_dict = {'result': this_action}
+                    # result_dict = {'result': action}
                     result_json = json.dumps(result_dict)
 
                     try:

@@ -1,3 +1,35 @@
+import asyncio
+import websockets
+
+async def make_sentence(websocket, path):
+    try:
+        while True:
+            message = await websocket.recv()
+            if message != "":
+                # gpt 처리 로직
+                data='something'
+                try:
+                    if websocket.open:
+                        await websocket.send(data)
+                except Exception as e:
+                    print(f"send error: {str(e)}")
+
+    except websockets.exceptions.ConnectionClosedOK:
+        pass
+
+
+start_server = websockets.serve(make_sentence, "localhost", 8080)
+
+
+async def main():
+    await start_server
+
+
+if __name__ == "__main__":
+    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.get_event_loop().run_forever()
+
+
 # import cv2
 # import mediapipe as mp
 # import numpy as np

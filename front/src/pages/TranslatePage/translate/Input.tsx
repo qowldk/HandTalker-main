@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useImperativeHandle, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { Camera } from "@mediapipe/camera_utils";
 import {
@@ -13,11 +13,18 @@ import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 import { useRecoilState } from "recoil";
 import { resultText } from "../../../utils/recoil/atom";
 
-const Input = () => {
+export interface ChildProps {
+  send_words: () => void;
+}
+
+
+const Input = forwardRef<ChildProps>((props, ref) => {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasPoseRef = useRef<HTMLCanvasElement>(null);
   const resultsRef = useRef<HolisticResults | null>(null);
+
+  const transmission_frequency = 1000/60;  // 8080 전송 주기
 
   const [previous, setPrevious] = useState('') // 웹소켓으로부터 받은 이전 단어
   // const [intervalTime, setIntervalTime] = useState(1000/30);
@@ -34,7 +41,11 @@ const Input = () => {
     setPrevious("");
   };
 
-  useEffect(()=>{console.log("디버그!!", previous)}, [previous]); // 디버깅용
+  // useEffect(()=>{console.log("디버그!!", previous)}, [previous]);
+	useImperativeHandle(ref, () => ({
+	  // 부모에서 사용하고자 하는 함수이름
+    send_words,
+	}));
 
 
   /*  랜드마크들의 좌표를 콘솔에 출력 및 websocket으로 전달 */
@@ -50,7 +61,7 @@ const Input = () => {
           );
           console.log("hands sended");
         } else {
-          console.error("ws connection is not open");
+          console.error("ws connection is not open. (8081)");
         }
       }
     }
@@ -64,13 +75,30 @@ const Input = () => {
         socketRef.current.send(imgData);
       } else {
         console.error("ws connection is not open. (8080)");
+        // socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
+        // window.location.reload();
+        alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
       }
       // console.log(imgData);
     }
   }, [webcamRef]);
+  const send_words = useCallback(() => {
+    // if (text && !isChecked) {
+      // console.log("APICALLDEBUG1", socketRef_LLM.current.readyState, WebSocket.OPEN, socketRef_LLM.current.readyState === WebSocket.OPEN);
+      if (text==='') return;
+      if (socketRef_LLM.current.readyState === WebSocket.OPEN) {
+        // console.log("debug_LLM", text);
+        socketRef_LLM.current.send(text);
+      } else {
+        console.error("ws connection is not open. (8082)");
+      }
+    // }
+  }, [text]);
+
+
   useEffect(() => {
     if (!isChecked) {
-      const interval = setInterval(capture, 1000/30);
+      const interval = setInterval(capture, transmission_frequency);
       return () => clearInterval(interval);
     } else {
       const interval = setInterval(OutputData, 1000);
@@ -170,9 +198,8 @@ const Input = () => {
   }, [onPoseResults]);
 
   const socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
-  const socketRef_hands = useRef<WebSocket>(
-    new WebSocket("ws://localhost:8081")
-  );
+  const socketRef_hands = useRef<WebSocket>(new WebSocket("ws://localhost:8081"));
+  const socketRef_LLM = useRef<WebSocket>(new WebSocket("ws://localhost:8082"));
 
   // useEffect(() => {
   //   if (isChecked) {
@@ -199,13 +226,23 @@ const Input = () => {
   //   };
   // }, [isChecked]);
   
+  socketRef_LLM.current.onmessage = (event) =>{
+    console.log(`receive message(LLM): ${event.data}`);
+    const jsonString = JSON.parse(event.data);
+    setText(jsonString.result);
+  }
+
   socketRef.current.onmessage = (event) => {
     console.log(`receive message: ${event.data}`);
     const jsonString = JSON.parse(event.data);
+    console.log(`receive string: ${jsonString.result}`);
     if (!isChecked){
       if (previous !== jsonString.result){
         if (jsonString.result==='') return;
         setText(text + ' ' + jsonString.result);
+        // console.log("before API call", text);
+        // send_words();
+        // console.log("after API call", text);
         setPrevious(jsonString.result)
       }      
     }
@@ -223,10 +260,10 @@ const Input = () => {
   
   useEffect(() => {
     socketRef.current.onopen = () => {
-      console.log("ws connected");
+      console.log("ws connected (8080_useEffect)");
     };
     socketRef.current.onclose = () => {
-      console.log("ws closed");
+      console.log("ws closed (8080_useEffect)");
     };
 
     return () => {
@@ -236,13 +273,25 @@ const Input = () => {
 
   useEffect(() => {
     socketRef_hands.current.onopen = () => {
-      console.log("ws connected");
+      console.log("ws connected (8081_useEffect)");
     };
     socketRef_hands.current.onclose = () => {
-      console.log("ws closed");
+      console.log("ws closed (8081_useEffect)");
     };
     return () => {
       socketRef_hands.current.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    socketRef_LLM.current.onopen = () => {
+      console.log("ws connected (8082_useEffect)");
+    };
+    socketRef_LLM.current.onclose = () => {
+      console.log("ws closed (8082_uesEffect)");
+    };
+    return () => {
+      socketRef_LLM.current.close();
     };
   }, []);
 
@@ -306,6 +355,6 @@ const Input = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Input;

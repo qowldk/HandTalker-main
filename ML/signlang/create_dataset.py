@@ -6,7 +6,7 @@ import time, os
 actions = [
     ('안녕하세요', 0),
     ('만나다', 1),
-    ('반갑습니다', 2)
+    ('반갑다', 2)
 ]
 # labels = [
 #     0,
@@ -101,12 +101,18 @@ while cap.isOpened():
         print(action, full_seq_data.shape)
 
 
+        script_directory = os.path.dirname(os.path.abspath(__file__))
+        dataset_directory = os.path.join(script_directory, "dataset")
+
         same_file_num = ''
-        file_name = 'C:\\Users\\user\\Downloads\\HandTalker-main_\\ML\\signlang\\dataset\\' + str(idx) + '_' + str(action) + '_' + same_file_num
+        file_name = str(idx) + '_' + str(action) + '_' + same_file_num
+
+        save_data = os.path.join(dataset_directory, file_name)
+
         # while os.path.exists(file_name):
         #     file_name = file_name[:-1]
         #     same_file_num += 1
         #     file_name += str(same_file_num)
-        np.save(file_name, full_seq_data)        
+        np.save(save_data, full_seq_data)        
 
     break
