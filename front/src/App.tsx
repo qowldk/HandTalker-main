@@ -6,6 +6,7 @@ import { Fallback } from "./utils/Fallback";
 
 const MainPage = lazy(() => import("./pages/MainPage/MainPage"));
 const TranslatePage = lazy(() => import("./pages/TranslatePage/TranslatePage"));
+const TranslateReversePage = lazy(() => import("./pages/TranslateReversePage/TranslateReversePage"));
 const Plugin = lazy(() => import("./pages/PlugIn/PlugIn"));
 const Login = lazy(() => import("./pages/Auth/Login/Login"));
 const SignUp = lazy(() => import("./pages/Auth/SIgnUp/SignUp"));
@@ -20,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/translate" element={<TranslatePage />} />
+            <Route path="/translateReverse" element={<TranslateReversePage />} />
             <Route path="/plugin" element={<Plugin />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />

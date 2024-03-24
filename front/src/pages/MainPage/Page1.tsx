@@ -26,6 +26,11 @@ const Page1 = () => {
             번역 서비스 사용해보기
           </button>
         </Link>
+        <Link to="/translateReverse">
+          <button className="bg-blue-500 text-white font-main text-base rounded-md mb-[10px] w-[200px] h-[50px] ">
+            한국어를 수어로 역벽역
+          </button>
+        </Link>
       </div>
       <img
         src={main}

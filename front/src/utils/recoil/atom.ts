@@ -8,6 +8,11 @@ export const translateState = atom({
   default: false,
 });
 
+export const translateReverseState = atom({
+  key: "translateReverseState",
+  default: false,
+});
+
 export const authState = atom({
   key: "authState",
   default: false,

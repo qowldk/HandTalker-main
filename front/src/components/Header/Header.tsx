@@ -70,6 +70,11 @@ const Header = () => {
             link="/translate"
           />
           <HeaderButton
+            isClicked={path === "/translateReverse" ? true : false}
+            name="역번역"
+            link="/translateReverse"
+          />
+          <HeaderButton
             isClicked={path === "/plugin" ? true : false}
             name="플러그인"
             link="/plugin"
