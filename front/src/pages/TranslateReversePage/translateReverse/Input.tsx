@@ -1,3 +1,5 @@
+// input 의미 없은 파일임. 혹시 몰라 일단 냅둠
+
 import React, { ChangeEvent, useState, useEffect, useRef } from "react";
 
 const Input = () => {
