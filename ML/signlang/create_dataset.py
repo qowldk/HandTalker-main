@@ -86,6 +86,7 @@ while cap.isOpened():
                         mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS)
                     
                     d=np.concatenate([d1, d2])
+                    print(d[-1], end=' ')
                     data.append(d)
 
                 cv2.imshow('img', img)
@@ -112,7 +113,7 @@ while cap.isOpened():
         script_directory = os.path.dirname(os.path.abspath(__file__))
         dataset_directory = os.path.join(script_directory, "dataset")
 
-        same_file_num = ''
+        same_file_num = '1'
         file_name = str(idx) + '_' + str(action) + '_' + same_file_num
 
         save_data = os.path.join(dataset_directory, file_name)

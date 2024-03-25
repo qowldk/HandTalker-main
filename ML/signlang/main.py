@@ -51,7 +51,7 @@ dataset_directory = os.path.join(script_directory, "dataset")
 print("현재 작업 디렉토리:", script_directory)
 
 MODEL_PATH = os.path.join(script_directory,'model_ko.h5')
-model = load_model(MODEL_PATH)
+model = load_model(MODEL_PATH, compile=False) # 코랩 사용시 compile=False 필수
 
 data_file_list = os.listdir(dataset_directory)
 data_file_list = sorted(data_file_list, reverse=True)
@@ -94,6 +94,7 @@ async def handle_client(websocket, path):
 
         while True:
             message = await websocket.recv()
+            # print('오냐?')
             # print("debug: message")
             if message != "":
                 # 프레임(이미지) 전처리
@@ -147,7 +148,6 @@ async def handle_client(websocket, path):
                 if len(seq) < seq_length: # 시퀀스 최소치가 쌓인 이후부터 판별
                     continue
 
-
                 if len(seq)>seq_length*100:  # 과도하게 쌓임 방지
                     seq=seq[-seq_length:]
                 
@@ -159,7 +159,8 @@ async def handle_client(websocket, path):
                 i_pred = int(np.argmax(y_pred)) # 최댓값 인덱스: 예측값이 가장 높은 값(동작)의 인덱스
                 conf = y_pred[i_pred] # 가장 확률 높은 동작의 확률이
 
-                if conf < 0.9:   # 90% 이상일 때만 수행
+                print("conf debug", conf)
+                if conf < 0.8:   # 90% 이상일 때만 수행
                     continue
 
                 # debug
@@ -168,19 +169,18 @@ async def handle_client(websocket, path):
 
                 action = actions[i_pred]
                 ####
-                action_seq.append(action)
+                # action_seq.append(action)
 
-                if len(action_seq) < 3:
-                    continue
+                # if len(action_seq) < 3:
+                #     continue
 
-                this_action = ''
-                if action_seq[-1] == action_seq[-2] == action_seq[-3]:
-                    this_action = action
+                # this_action = ''
+                # if action_seq[-1] == action_seq[-2] == action_seq[-3]:
+                #     this_action = action
                 ####
                 # debug
-                print(dc, "debug3.예측동작(출력동작):", this_action)
+                # print(dc, "debug3.예측동작(출력동작):", this_action)
 
-                seq=[]
                 
                 
                 # print("DEBUG", this_action)
@@ -190,26 +190,28 @@ async def handle_client(websocket, path):
                 #     sentence = sentence[-sentence_length:]
                     # print(' '.join(sentence))
 
-                print("send?1")
-                # if time.time() - extra_time_start < extra_time or action=='':  # 데이터 전달 최소 텀
-                if time.time() - extra_time_start < extra_time or this_action=='':  # 데이터 전달 최소 텀
-                    continue
-                extra_time_start = time.time()
-                print("send?2")
+                # print("send?1")
+                # # if time.time() - extra_time_start < extra_time or action=='':  # 데이터 전달 최소 텀
+                # if time.time() - extra_time_start < extra_time or this_action=='':  # 데이터 전달 최소 텀
+                #     print(time.time() - extra_time_start < extra_time, this_action=='')
+                #     continue
+                # extra_time_start = time.time()
+                # print("send?2")
 
 
                 # print("왜멈춰?1 ", action)
                 # print("왜멈춰?2 ", previous, action, previous==action)
 
-                if previous == this_action: continue  # 중복 전달 회피  ???
-                previous = this_action
-                # if previous == action: continue  # 중복 전달 회피  ???
-                # previous = action
-                print("send?3")
+                # if previous == this_action: continue  # 중복 전달 회피  ???
+                # previous = this_action
+                if previous == action: continue  # 중복 전달 회피  ???
+                previous = action
+
+                seq=[]
 
 
-                result_dict = {'result': this_action}
-                # result_dict = {'result': action}
+                # result_dict = {'result': this_action}
+                result_dict = {'result': action}
                 result_json = json.dumps(result_dict)
 
                 try:

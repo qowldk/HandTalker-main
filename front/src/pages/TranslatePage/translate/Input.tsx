@@ -24,7 +24,7 @@ const Input = forwardRef<ChildProps>((props, ref) => {
   const canvasPoseRef = useRef<HTMLCanvasElement>(null);
   const resultsRef = useRef<HolisticResults | null>(null);
 
-  const transmission_frequency = 1000/60;  // 8080 전송 주기
+  const transmission_frequency = 1000/30;  // 8080 전송 주기
 
   const [previous, setPrevious] = useState('') // 웹소켓으로부터 받은 이전 단어
   // const [intervalTime, setIntervalTime] = useState(1000/30);
