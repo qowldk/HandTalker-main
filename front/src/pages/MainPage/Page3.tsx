@@ -1,6 +1,7 @@
 import school from "../../assets/icons/school.webp";
 import hospital from "../../assets/icons/hospital.webp";
 import work from "../../assets/icons/work.webp";
+import logo2 from "../../assets/icons/SignLanguage2.png";
 
 const Page3 = () => {
   return (

@@ -1,5 +1,6 @@
 import main2 from "../../assets/images/main2.webp";
 import logo from "../../assets/icons/logo.svg";
+import logo2 from "../../assets/icons/SignLanguage2.png";
 
 const Page2 = () => {
   return (

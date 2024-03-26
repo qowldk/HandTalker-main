@@ -3,6 +3,7 @@ import discord from "../../assets/icons/discord.webp";
 import slack from "../../assets/icons/slack.webp";
 import kakaotalk from "../../assets/icons/kakaotalk.webp";
 import LazyLoad from "react-lazy-load";
+import logo2 from "../../assets/icons/SignLanguage2.png";
 
 const Page4 = () => {
   return (

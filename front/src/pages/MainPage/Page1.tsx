@@ -2,6 +2,7 @@ import LazyLoad from "react-lazy-load";
 import logo from "../../assets/icons/logo.svg";
 import main from "../../assets/images/main.webp";
 import { Link } from "react-router-dom";
+import logo2 from "../../assets/icons/SignLanguage2.png";
 
 const Page1 = () => {
   return (
@@ -14,7 +15,7 @@ const Page1 = () => {
           내 손 안의 작은 수어 통역가
         </p>
         <LazyLoad>
-          <img src={logo} alt="logo" className="w-[190px] mb-[20px]" />
+          <img src={logo2} alt="logo2" className="w-[190px] mb-[20px]" />
         </LazyLoad>
 
         <p className="text-lg text-gray-400 font-main mb-[10px]">
