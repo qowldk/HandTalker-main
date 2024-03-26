@@ -18,7 +18,7 @@ knn = cv2.ml.KNearest_create()
 knn.train(angle, cv2.ml.ROW_SAMPLE, label)
 
 
-async def handle_client(websocket, path):
+async def finger_spell(websocket, path):
     try:
         while True:
             message = await websocket.recv()
@@ -80,7 +80,7 @@ async def handle_client(websocket, path):
         pass
 
 
-start_server = websockets.serve(handle_client, "localhost", 8081)  
+start_server = websockets.serve(finger_spell, "localhost", 8081)  
 
 
 async def main():
