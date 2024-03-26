@@ -3,7 +3,12 @@ import websockets
 from openai import OpenAI
 import json
 
-client = OpenAI(api_key="따로 입력")
+from dotenv import load_dotenv
+import os
+load_dotenv()
+key = os.environ.get('API_KEY')
+
+client = OpenAI(api_key = key)
 system_role = """
 입력받은 문자열 중간에 결합되지 않은 한글 자음모음들이 있을 경우, 결합된 텍스트로 바꾼다.
 예를 들어서 'ㄱㅜㄱㅂㅏㅂ'을 입력이 있을 때, 대답으로 '국밥' 으로 바꾼다.

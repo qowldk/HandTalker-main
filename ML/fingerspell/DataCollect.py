@@ -25,7 +25,10 @@ cap = cv2.VideoCapture(0)
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
+label = 0
+
 with mp_hands.Hands(
+    max_num_hands=1,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5) as hands:
 
@@ -56,11 +59,11 @@ with mp_hands.Hands(
         cv2.imshow('MediaPipe Hands', image)
 
         key = cv2.waitKey(1)
+        if key == ord('l'):
+            # 라벨 입력 받기
+            label = input("라벨을 입력하세요. (기본 값: 0): ")
         if key == ord('.'):
             if results.multi_hand_landmarks:
-                # 라벨 입력 받기
-                label = input("라벨을 입력하세요 (예: open_hand, closed_fist, peace_sign 등): ")
-
                 # 라벨과 각도 값을 텍스트 파일에 저장
                 script_directory = os.path.dirname(os.path.abspath(__file__))
                 PATH = os.path.join(script_directory, 'dataSet_ko.txt')
