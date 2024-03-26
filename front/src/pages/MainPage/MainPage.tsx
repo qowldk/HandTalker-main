@@ -17,7 +17,7 @@ let options = {
   ], // the anchors for each sections
   arrowNavigation: true, // use arrow keys
   className: "SectionContainer", // the class name for the section container
-  delay: 1000, // the scroll animation speed
+  delay: 500, // the scroll animation speed
   navigation: false, // use dots navigation
   scrollBar: false, // use the browser default scrollbar
   sectionClassName: "Section", // the section class name
@@ -43,9 +43,7 @@ const MainPage = () => {
         <Section>
           <Page4 />
         </Section>
-        <Section>
-          <Page5 />
-        </Section>
+    
       </SectionsContainer>
     </div>
   );

@@ -1,4 +1,5 @@
 import logo from "../../assets/icons/logo.svg";
+import sl from "../../assets/icons/SignLanguage.png"; // 이미지 경로 수정
 import menu from "../../assets/icons/menu.svg";
 import HeaderButton from "./HeaderButton";
 import { useLocation } from "react-router-dom";
@@ -43,18 +44,18 @@ const Header = () => {
   return (
     <>
       {open && <Drawer onOpen={openHandler} isOpen={open} />}
-      <div className="px-6 flex lg:hidden bg-white bg-opacity-70 top-0 fixed z-10 w-full h-[3.1rem] border-b border-gray border-opacity-70 flex-row justify-between items-center">
-        <Link to="/">
-          <img src={logo} alt="logo" className="inline w-auto h-5" />
+      <div className="px-6 flex lg:hidden bg-navy bg-opacity-70 top-0 fixed z-10 w-full h-[3.1rem] border-b border-gray border-navy flex-row justify-between items-center">
+        <Link to="/" className="flex items-center justify-center w-full"> {/* 이미지를 감싸는 div 요소에 flex와 justify-center 클래스 추가 */}
+          <img src={sl} alt="sl" className="inline w-auto h-16 mx-auto" /> {/* 이미지 크기 조정 및 수평 가운데 정렬 */}
         </Link>
         <button type="button" onClick={openHandler}>
           <img src={menu} alt="menu" className="inline" />
         </button>
       </div>
-      <div className="hidden lg:flex bg-white bg-opacity-70 top-0 fixed z-10 w-full h-[4.5rem] border-b border-gray border-opacity-70 flex-row justify-between items-center">
+      <div className="hidden lg:flex bg-navy bg-opacity-70 top-0 fixed z-10 w-full h-[4.5rem] border-b border-gray border-navy flex-row justify-between items-center">
         <div className="ml-[10rem]">
-          <Link to="/">
-            <img src={logo} alt="logo" className="w-auto h-6" />
+          <Link to="/" className="flex items-center justify-center w-full"> {/* 이미지를 감싸는 div 요소에 flex와 justify-center 클래스 추가 */}
+            <img src={sl} alt="sl" className="w-auto h-16 items-center justify-center mx-auto" /> {/* 이미지 크기 조정 및 수평 가운데 정렬 */}
           </Link>
         </div>
 

@@ -66,45 +66,45 @@ export const Drawer = ({ onOpen, isOpen }: Props) => {
 
   return (
     <ModalPortal>
-      <div className="fixed top-0 right-0 z-20 flex items-center justify-end w-full h-screen bg-black md:hidden bg-opacity-60">
+      <div className="fixed top-0 right-0 z-20 flex items-center justify-end w-full h-screen bg-navy bg-opacity-60 md:bg-opacity-60 md:hidden">
         <div
           ref={modalRef}
-          className={`w-[200px] h-full flex flex-col pl-5 pr-5 items-start justify-center bg-white border-main-2 ${
+          className={`w-[200px] h-full flex flex-col pl-5 pr-5 items-start justify-center bg-navy ${
             visible ? "slide-in-from-right" : "slide-out-to-left"
           } space-y-4`}
         >
           <button
             className={`${
-              path === "/" && "bg-main-1 font-bold"
+              path === "/" && "bg-navy font-bold text-white"
             } w-full h-[2.3rem]  text-start pl-2 rounded-lg outline-none`}
             onClick={() => {
               navigate("/");
               onOpen();
             }}
           >
-            <p className="text-2xl text-black font-main">메인</p>
+            <p className="text-2xl font-main">메인</p>
           </button>
           <button
             className={`${
-              path === "/translate" && "bg-main-1 font-bold"
+              path === "/translate" && "bg-navy font-bold text-white"
             } w-full h-[2.3rem]  text-start pl-2 rounded-lg outline-none`}
             onClick={() => {
               navigate("/translate");
               onOpen();
             }}
           >
-            <p className="text-2xl text-black font-main">번역</p>
+            <p className="text-2xl font-main">번역</p>
           </button>
           <button
             className={`${
-              path === "/plugin" && "bg-main-1 font-bold"
+              path === "/plugin" && "bg-navy font-bold text-white"
             } w-full h-[2.3rem] text-start pl-2 rounded-lg`}
             onClick={() => {
               navigate("/plugin");
               onOpen();
             }}
           >
-            <p className="text-2xl text-black font-main">플러그인</p>
+            <p className="text-2xl font-main">플러그인</p>
           </button>
           {auth ? (
             <button
@@ -114,19 +114,19 @@ export const Drawer = ({ onOpen, isOpen }: Props) => {
                 onOpen();
               }}
             >
-              <p className="text-2xl text-black font-main">로그아웃</p>
+              <p className="text-2xl font-main">로그아웃</p>
             </button>
           ) : (
             <button
               className={`${
-                path === "/login" && "bg-main-1 font-bold"
+                path === "/login" && "bg-navy font-bold text-white"
               } w-full h-[2.3rem] text-start pl-2 rounded-lg outline-none`}
               onClick={() => {
                 navigate("/login");
                 onOpen();
               }}
             >
-              <p className="text-2xl text-black font-main">로그인</p>
+              <p className="text-2xl font-main">로그인</p>
             </button>
           )}
         </div>

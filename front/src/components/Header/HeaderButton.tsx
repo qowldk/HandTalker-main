@@ -12,11 +12,11 @@ const HeaderButton = ({ isClicked, name, link }: HeaderButtonProps) => {
   if (isClicked) {
     return (
       <div
-        className={`w-20 border-b-2 border-icon font-bold 
-       mb-[-3px] h-full font-main text-base text-icon flex flex-col justify-center items-center`}
+        className={`w-20 border-b-2 border-black font-bold 
+       mb-[-3px] h-full font-main text-base text-white flex flex-col justify-center items-center`}
         onClick={onClickListener}
       >
-        <Link to={`${link}`}>
+        <Link to={`${link}`} className="text-black"> {/* 색상 변경 */}
           <p>{name}</p>
         </Link>
       </div>
@@ -25,10 +25,10 @@ const HeaderButton = ({ isClicked, name, link }: HeaderButtonProps) => {
     return (
       <div
         className={`w-20 
-       h-full font-main text-base text-black flex flex-col justify-center items-center`}
+       h-full font-main text-base text-white flex flex-col justify-center items-center`}
         onClick={onClickListener}
       >
-        <Link to={`${link}`}>
+        <Link to={`${link}`} className="text-black"> {/* 색상 변경 */}
           <p>{name}</p>
         </Link>
       </div>
