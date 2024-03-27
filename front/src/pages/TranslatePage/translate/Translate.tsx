@@ -137,7 +137,7 @@ const Translate = () => {
                 <BiRevision />
               </button>
 
-
+{/* 
               <label className = "text-black-300 md:mr-[5px] xl:mr-[30px] hover:bg-gray-200 hover:bg-opacity-30 rounded-full cursor-pointer">
               <input
                 type="checkbox"
@@ -145,7 +145,7 @@ const Translate = () => {
                 // onChange={onChange}
               />
               존대
-              </label>
+              </label> */}
               
               {/* <button
                 onClick={SendMessage}
