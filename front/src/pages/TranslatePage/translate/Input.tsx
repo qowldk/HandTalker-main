@@ -11,7 +11,7 @@ import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 // import { Hands, Results } from "@mediapipe/hands";
 // import { drawCanvas } from "../../../utils/translate/drawCanvas";
 import { useRecoilState } from "recoil";
-import { resultText } from "../../../utils/recoil/atom";
+import { resultText, isGeneratingSentence } from "../../../utils/recoil/atom";
 
 export interface ChildProps {
   send_words: () => void;
@@ -19,6 +19,8 @@ export interface ChildProps {
 
 
 const Input = forwardRef<ChildProps>((props, ref) => {
+  const [isGenerating, setIsGenerating] = useRecoilState(isGeneratingSentence); // LLM API 응답 대기중 여부
+
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasPoseRef = useRef<HTMLCanvasElement>(null);
@@ -230,6 +232,7 @@ const Input = forwardRef<ChildProps>((props, ref) => {
     console.log(`receive message(LLM): ${event.data}`);
     const jsonString = JSON.parse(event.data);
     setText(jsonString.result);
+    setIsGenerating(false);
   }
 
   socketRef.current.onmessage = (event) => {

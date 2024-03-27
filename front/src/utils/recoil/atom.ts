@@ -19,6 +19,11 @@ export const resultText = atom({
   default: "",
 });
 
+export const isGeneratingSentence = atom({  // LLM API 응답 대기중 여부
+  key: "isGeneratingSentence",
+  default: false,
+});
+
 export const dchannel = atom({
   key: "dchannel",
   default: "",

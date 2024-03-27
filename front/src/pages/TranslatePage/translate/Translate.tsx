@@ -4,6 +4,7 @@ import {
   translateState,
   resultText,
   dchannel,
+  isGeneratingSentence,
 } from "../../../utils/recoil/atom";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { useEffect, useRef, useState } from "react";
@@ -16,6 +17,8 @@ import { NotTranslating } from "./NotTranslating";
 import Webcam from "react-webcam";
 
 const Translate = () => {
+  const [isGenerating, setIsGenerating] = useRecoilState(isGeneratingSentence); // LLM API 응답 대기중 여부
+
   const [openModal, setOpenModal] = useState(false);
   const onModalAlert = () => {
     setOpenModal(!openModal);
@@ -32,9 +35,11 @@ const Translate = () => {
   const generate_sentence = ()=>{
     if (childComponentRef.current) {
       childComponentRef?.current?.send_words();
+      setIsGenerating(true);
+    } else{
+      alert("서버 연결 확인 및 새로고침 후 다시 시도해주세요.")
     }
-  }
-
+  };
 
   const webcamRef = useRef<Webcam>(null);
   useEffect(() => {
@@ -99,12 +104,12 @@ const Translate = () => {
       {openModal && <ConfigModal onOpenModal={onModalAlert} />}
       <button
         onClick={onModalAlert}
-        className="w-[8rem] h-[2.5rem] md:w-[160px] md:h-[3rem] font-main text-xl font-bold items-end justify-end ml-[12rem] md:ml-[48.7rem] xl:ml-[67.5rem] text-white bg-main-2 rounded-lg"
+        className="w-[8rem] h-[2.5rem] md:w-[160px] md:h-[3rem] font-main text-xl font-bold items-end justify-end ml-[12rem] md:ml-[48.7rem] xl:ml-[67.5rem] text-white bg-black rounded-lg"
       >
         연동 설정
       </button>
       <div className="flex flex-col items-center justify-center mt-2 md:flex-row">
-        {translate ? <Input ref={childComponentRef}/> : <NotTranslating />}
+        {translate ? <Input ref={childComponentRef} /> : <NotTranslating />}
         <p className="hidden md:block ml-[40px] text-6xl text-gray-200">
           <FaArrowRightLong />
         </p>
@@ -121,16 +126,27 @@ const Translate = () => {
                 onClick={() => {
                   copyToClipboardHandler(text);
                 }}
-                className="text-2xl md:text-4xl text-gray-300 mr-[15px] hover:bg-gray-200 hover:bg-opacity-30 rounded-full cursor-pointer"
+                className="text-2xl md:text-4xl text-black-300 mr-[15px] hover:bg-gray-200 hover:bg-opacity-30 rounded-full cursor-pointer"
               >
                 <BiCopy />
               </button>
               <button
                 onClick={textClearHandler}
-                className="text-2xl md:text-4xl text-gray-300 md:mr-[30px] xl:mr-[75px] hover:bg-gray-200 hover:bg-opacity-30 rounded-full cursor-pointer"
+                className="text-2xl md:text-4xl text-black-300 md:mr-[30px] xl:mr-[75px] hover:bg-gray-200 hover:bg-opacity-30 rounded-full cursor-pointer"
               >
                 <BiRevision />
               </button>
+
+
+              <label className = "text-black-300 md:mr-[5px] xl:mr-[30px] hover:bg-gray-200 hover:bg-opacity-30 rounded-full cursor-pointer">
+              <input
+                type="checkbox"
+                // checked={checked}
+                // onChange={onChange}
+              />
+              존대
+              </label>
+              
               {/* <button
                 onClick={SendMessage}
                 className="ml-4 md:ml-0 flex flex-row justify-center items-center rounded-xl md:min-w-[16rem] w-[11rem] h-[2.7rem] md:w-[16rem] xl:w-[18.75rem] md:h-[3rem] xl:h-[3.2rem] bg-[#5865f2] text-white font-main text-xl"
@@ -142,27 +158,29 @@ const Translate = () => {
                 />
                 디스코드로 전송
               </button> */}
+
               <button
                 onClick={generate_sentence}
-                className="ml-4 md:ml-0 flex flex-row justify-center items-center rounded-xl md:min-w-[16rem] w-[11rem] h-[2.7rem] md:w-[16rem] xl:w-[18.75rem] md:h-[3rem] xl:h-[3.2rem] bg-[#5865f2] text-white font-main text-xl"
+                className="ml-4 md:ml-0 flex flex-row justify-center items-center rounded-xl md:min-w-[16rem] w-[11rem] h-[2.7rem] md:w-[16rem] xl:w-[15.75rem] md:h-[3rem] xl:h-[3.2rem] bg-black text-white font-main text-xl"
               >
-                generate!!
+                {isGenerating ? '문장 생성중...' : '문장 생성'}
               </button>
             </div>
           </div>
         ) : (
           <div className="mt-3 md:mt-0 p-5 md:p-9 md:ml-[40px] w-[20rem] h-[13rem] md:w-[25rem] xl:w-[31.25rem] md:h-[31.25rem] xl:h-[37.5rem] bg-white rounded-xl border border-gray-200 shadow-md">
             <p className="text-2xl font-bold leading-normal text-black md:text-3xl font-main">
-              번역을 시작하려면 <br />
+              카메라 연결 확인 후 <br />
             </p>
             <p className="mt-0 text-2xl font-bold leading-normal text-black md:text-3xl font-main md:mt-2">
-              아래 버튼을 눌러주세요. <br />
+              번역 시스템을 이용해주세요. <br />
             </p>
             <button
               onClick={onClick}
-              className="w-[7rem] h-[2.7rem] md:w-[8.75rem] md:h-[3rem] mt-[30px] rounded-xl font-bold font-main text-xl text-white bg-main-2"
+              className="w-[7rem] h-[2.7rem] md:w-[8.75rem] md:h-[3rem] mt-[30px] rounded-xl font-bold font-main text-xl text-white bg-black"
             >
-              시작하기
+              
+             번역 시작
             </button>
           </div>
         )}

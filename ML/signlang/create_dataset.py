@@ -4,7 +4,7 @@ import numpy as np
 import time, os
 
 actions = [
-    ('안녕하세요', 0),
+    ('안녕', 0),
     ('만나다', 1),
     ('반갑다', 2)
 ]
@@ -86,7 +86,7 @@ while cap.isOpened():
                         mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS)
                     
                     d=np.concatenate([d1, d2])
-                    print(d[-1], end=' ')
+                    # print(d[-1], end=' ')
                     data.append(d)
 
                 cv2.imshow('img', img)
@@ -95,9 +95,8 @@ while cap.isOpened():
             print("frame: ", a)
         data = np.array(data)
         print(action, data.shape)
-        # file_name = 'C:\\Users\\user\\Downloads\\HandTalker-main_\\ML\\signlang\\dataset\\raw_' + str(action) + '_' + str(created_time)
-        # np.save(file_name, data)
         
+
         if len(data) - seq_length < 5:
             print("2개의 손이 감지된 프레임이 너무 적어 데이터 생성에 실패했습니다.")
             continue
@@ -112,8 +111,9 @@ while cap.isOpened():
 
         script_directory = os.path.dirname(os.path.abspath(__file__))
         dataset_directory = os.path.join(script_directory, "dataset")
+        frame_directory = os.path.join(script_directory, "dataset_frame") # 향후 시퀀스 길이 조정 대비 프레임 저장 디렉토리
 
-        same_file_num = '1'
+        same_file_num = '5'
         file_name = str(idx) + '_' + str(action) + '_' + same_file_num
 
         save_data = os.path.join(dataset_directory, file_name)
@@ -122,6 +122,11 @@ while cap.isOpened():
         #     file_name = file_name[:-1]
         #     same_file_num += 1
         #     file_name += str(same_file_num)
-        np.save(save_data, full_seq_data)        
+        np.save(save_data, full_seq_data)    
+            
+        
+        frame_data = os.path.join(frame_directory, file_name) # 프레임 데이터
+        np.save(frame_data, data)   # 저장
+
 
     break
