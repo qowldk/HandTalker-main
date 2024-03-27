@@ -103,8 +103,7 @@ async def handle_client(websocket, path):
                 image, result = mediapipe_detection(frame, hands)
                 # print(f"result: {results}")
                 
-            if result.multi_hand_landmarks is None: continue
-            if len(result.multi_hand_landmarks) == 2:  
+            if result.multi_hand_landmarks is not None:
                 h = 0 # 손 두개 감지 로직을 위한 임시 값
                 d1 = np.empty(0)
                 d2 = np.empty(0)
@@ -137,6 +136,10 @@ async def handle_client(websocket, path):
                         d2 = np.concatenate([joint.flatten(), angle_label[0]])
                 
                 d=np.concatenate([d1, d2])
+
+                if len(d)==99:
+                    d=np.concatenate([d, np.zeros(99)])
+
                 # print("what???",len(d))
                 seq.append(d)
                 # print("debug2", len(seq))

@@ -49,8 +49,7 @@ while cap.isOpened():
                 result = hands.process(img)
                 img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
-                if result.multi_hand_landmarks is None: continue
-                if len(result.multi_hand_landmarks) == 2:                    
+                if result.multi_hand_landmarks is not None:
                     h = 0 # 손 두개 감지 로직을 위한 임시 값
                     d1 = np.empty(0)
                     d2 = np.empty(0)
@@ -87,6 +86,9 @@ while cap.isOpened():
                     
                     d=np.concatenate([d1, d2])
                     # print(d[-1], end=' ')
+                    if len(d)==99:
+                        d=np.concatenate([d, np.zeros(99), [idx]])
+                        # print(d)
                     data.append(d)
 
                 cv2.imshow('img', img)
@@ -113,7 +115,7 @@ while cap.isOpened():
         dataset_directory = os.path.join(script_directory, "dataset")
         frame_directory = os.path.join(script_directory, "dataset_frame") # 향후 시퀀스 길이 조정 대비 프레임 저장 디렉토리
 
-        same_file_num = '5'
+        same_file_num = ''
         file_name = str(idx) + '_' + str(action) + '_' + same_file_num
 
         save_data = os.path.join(dataset_directory, file_name)
