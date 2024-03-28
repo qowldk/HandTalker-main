@@ -5,6 +5,18 @@ import os
 """
 웹캠에서 손을 감지하고, 손의 각도를 계산하여 그 값을 파일에 저장
 """
+input_announce="""
+l 라벨 변경
+. 데이터 저장 
+
+(된소리 = 예사소리 * 2)
+0: 'ㄱ', 1: 'ㄴ', 2: 'ㄷ', 3: 'ㄹ', 4: 'ㅁ', 5: 'ㅂ', 6: 'ㅅ', 7: 'ㅇ',
+8: 'ㅈ', 9: 'ㅊ', 10: 'ㅋ', 11: 'ㅌ', 12: 'ㅍ', 13: 'ㅎ', 
+14: 'ㅏ', 15: 'ㅑ', 16: 'ㅓ', 17: 'ㅕ', 18: 'ㅗ', 19: 'ㅛ', 20: 'ㅜ', 21: 'ㅠ',
+22: 'ㅡ', 23: 'ㅣ', 24: 'ㅐ', 25: 'ㅒ', 26: 'ㅔ', 27: 'ㅖ', 
+28: 'ㅢ', 29: 'ㅚ', 30: 'ㅟ'
+
+라벨(숫자)을 입력하세요: """
 def calculate_angle(joint):
     v1 = joint[[0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19], :]
     v2 = joint[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], :]
@@ -25,8 +37,8 @@ cap = cv2.VideoCapture(0)
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
-label = 0
-
+label=None
+# 사진 띄우기?
 with mp_hands.Hands(
     max_num_hands=1,
     min_detection_confidence=0.5,
@@ -35,7 +47,7 @@ with mp_hands.Hands(
     while cap.isOpened():
         success, image = cap.read()
         if not success:
-            print("Ignoring empty camera frame.")
+            print("Ignoring empty camera frame.\n웹캠을 사용중인 프로세스를 중지해주세요.")
             continue
 
         image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
@@ -58,19 +70,26 @@ with mp_hands.Hands(
 
         cv2.imshow('MediaPipe Hands', image)
 
+
         key = cv2.waitKey(1)
         if key == ord('l'):
             # 라벨 입력 받기
-            label = input("라벨을 입력하세요. (기본 값: 0): ")
+            label = input(input_announce)
         if key == ord('.'):
+            if label is None:
+                print("라벨을 입력해주세요.(l)")
+                continue
             if results.multi_hand_landmarks:
                 # 라벨과 각도 값을 텍스트 파일에 저장
                 script_directory = os.path.dirname(os.path.abspath(__file__))
                 PATH = os.path.join(script_directory, 'dataSet_ko.txt')
                 with open(PATH, 'a') as file:
                     file.write(f"{','.join(str(a) for a in angle)},{label}\n")
+                print("saved:", label)
+            else:
+                print("감지된 손이 없습니다.")
 
-        elif key == 27:  # ESC 키를 누르면 루프 종료
+        elif key == 27 or key=='q':  # ESC 키를 누르면 루프 종료
             break
 
 cap.release()
