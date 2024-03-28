@@ -32,7 +32,7 @@ print(f'데이터 입력 시작 시 딜레이: {time_to_start}초')
 
 anounce_for_user = '''
 웹캠 화면에서 메뉴 선택
-l 수어 데이터를 쌓을 단어 입력
+l 데이터를 쌓을 수어의 한글 단어 입력
 . 수어 데이터 입력 시작
 t 데이터 입력 시간 변경(default: 30s)
 y 데이터 입력 준비 시간 변경(defalut: 3s)
@@ -64,16 +64,34 @@ while cap.isOpened():
     if key == ord('l'):
         # 단어, 라벨 입력
         action = input('단어 입력: ')
-        idx = input('라벨 입력: ')
+        while True:
+            idx = input('라벨 입력: ')
+            try:
+                int_value = int(idx)
+                break
+            except ValueError:
+                print("정수 값을 입력해주세요.")
         print(f'({action}, {idx}) 입력 완료')
         # print(anounce_for_user)
     
     if key == ord('t'):
-        secs_for_action = int(input(f'{secs_for_action} -> '))
+        while True:
+            secs_for_action = input(f'{secs_for_action} -> ')
+            try:
+                float_value = float(secs_for_action)
+                break
+            except ValueError:
+                print("실수 값을 입력해주세요.")            
         print('데이터 입력 시간 변경 완료')
 
     if key == ord('y'):
-        time_to_start = int(input(f'{time_to_start} -> '))
+        while True:
+            time_to_start = input(f'{time_to_start} -> ')
+            try:
+                float_value = float(time_to_start)
+                break
+            except ValueError:
+                print("실수 값을 입력해주세요.")
         print('데이터 입력 준비 시간 변경 완료')
         
     if key == ord('.'):
@@ -88,7 +106,7 @@ while cap.isOpened():
         img = cv2.flip(img, 1)
         cv2.putText(img, f'Ready...', org=(10, 30), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0,0,0), thickness=2)
         cv2.imshow('img', img)
-        cv2.waitKey(time_to_start*1000) 
+        cv2.waitKey(int(time_to_start*1000)) 
 
         start_time = time.time()
 
@@ -171,23 +189,28 @@ while cap.isOpened():
         print(action, full_seq_data.shape) # debug
 
         # 저장할 npy 파일 이름
-        same_file_num = input('파일 번호 입력')
-        file_name = str(idx) + '_' + str(action) + '_' + same_file_num
+        # save_file_num = input('파일 번호 입력')
+        file_name = str(idx) + '_' + str(action) + '_0.npy'
         
         # 저장
         script_directory = os.path.dirname(os.path.abspath(__file__))
         save_data = os.path.join(script_directory, "dataset", file_name)
+        ##
+        save_file_num = 0
+        while os.path.exists(save_data):
+            save_file_num += 1
+            length_except_num = len(save_data.split('_')[-1])
+            save_data = save_data[:-length_except_num] # 'label_action_'
+            save_data += str(save_file_num) + '.npy'
+        ##
         np.save(save_data, full_seq_data)        
 
         # 프레임 단위 데이터 저장 디렉토리
+        file_name = str(idx) + '_' + str(action) + '_'+str(save_file_num)+'.npy'
         frame_data = os.path.join(script_directory, "dataset_frame", file_name) # 프레임 데이터
         np.save(frame_data, data)   # 저장
 
-        # while os.path.exists(file_name):
-        #     file_name = file_name[:-1]
-        #     same_file_num += 1
-        #     file_name += str(same_file_num)
-        print(f'({action}, {idx}):', data.shape, full_seq_data.shape)
+        print(f'({action}, {idx}):', data.shape, full_seq_data.shape, '데이터 생성 완료')
 
         
         
