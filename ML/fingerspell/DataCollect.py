@@ -59,12 +59,6 @@ with mp_hands.Hands(
 
         if results.multi_hand_landmarks:
             for res in results.multi_hand_landmarks:
-                joint = np.zeros((21, 3))
-                for j, lm in enumerate(res.landmark):
-                    joint[j] = [lm.x, lm.y, lm.z]
-
-                angle = calculate_angle(joint)
-
                 mp_drawing.draw_landmarks(
                     image, res, mp_hands.HAND_CONNECTIONS)
 
@@ -80,11 +74,22 @@ with mp_hands.Hands(
                 print("라벨을 입력해주세요.(l)")
                 continue
             if results.multi_hand_landmarks:
+                res=None
+                for res_ in results.multi_hand_landmarks:
+                    res=res_
+                
+                joint = np.zeros((21, 4))
+                for j, lm in enumerate(res.landmark):
+                    joint[j] = [lm.x, lm.y, lm.z, lm.visibility]
+                
+                angle = calculate_angle(joint)
+                d = np.concatenate([joint.flatten(), angle])
+                d = d.tolist()
                 # 라벨과 각도 값을 텍스트 파일에 저장
                 script_directory = os.path.dirname(os.path.abspath(__file__))
                 PATH = os.path.join(script_directory, 'dataSet_ko.txt')
                 with open(PATH, 'a') as file:
-                    file.write(f"{','.join(str(a) for a in angle)},{label}\n")
+                    file.write(f"{','.join(str(a) for a in d)},{label}\n")
                 print("saved:", label)
             else:
                 print("감지된 손이 없습니다.")
