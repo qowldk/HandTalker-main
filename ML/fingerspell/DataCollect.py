@@ -87,7 +87,7 @@ with mp_hands.Hands(
                 d = d.tolist()
                 # 라벨과 각도 값을 텍스트 파일에 저장
                 script_directory = os.path.dirname(os.path.abspath(__file__))
-                PATH = os.path.join(script_directory, 'dataSet_ko.txt')
+                PATH = os.path.join(script_directory, 'dataset_ko.txt')
                 with open(PATH, 'a') as file:
                     file.write(f"{','.join(str(a) for a in d)},{label}\n")
                 print("saved:", label)
