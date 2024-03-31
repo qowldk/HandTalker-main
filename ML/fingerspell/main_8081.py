@@ -6,7 +6,7 @@ import websockets
 import os
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(script_directory,'dataSet_ko.txt')
+DATA_PATH = os.path.join(script_directory,'dataset_ko.txt')
 
 file = np.genfromtxt(DATA_PATH, delimiter=',')
 angleFile = file[:, :-1]

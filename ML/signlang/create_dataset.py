@@ -78,7 +78,7 @@ while cap.isOpened():
         while True:
             secs_for_action = input(f'{secs_for_action} -> ')
             try:
-                float_value = float(secs_for_action)
+                secs_for_action = float(secs_for_action)
                 break
             except ValueError:
                 print("실수 값을 입력해주세요.")            
@@ -88,7 +88,7 @@ while cap.isOpened():
         while True:
             time_to_start = input(f'{time_to_start} -> ')
             try:
-                float_value = float(time_to_start)
+                time_to_start = float(time_to_start)
                 break
             except ValueError:
                 print("실수 값을 입력해주세요.")

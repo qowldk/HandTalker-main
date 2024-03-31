@@ -35,3 +35,4 @@ file_name = 'total_dataset' + ''
 save_data = os.path.join(script_directory, file_name)
 np.save(save_data, total_data)
 
+print("done")
