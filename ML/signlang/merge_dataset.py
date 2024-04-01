@@ -27,7 +27,7 @@ for file_name in data_file_list:
         total_data.append(d)
 
 total_data = np.array(total_data) # list -> numpy
-print("total_dataset: ", total_data.shape)
+# print("total_dataset: ", total_data.shape)
 
 # 저장
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -35,4 +35,4 @@ file_name = 'total_dataset' + ''
 save_data = os.path.join(script_directory, file_name)
 np.save(save_data, total_data)
 
-print("done")
+print("done: ", total_data.shape)
