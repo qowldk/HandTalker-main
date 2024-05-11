@@ -2,20 +2,22 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import os, time
+import hand
+import itertools
 
 # 한 시퀀스씩 저장하는 대신 에포크를 100n ~ 1000배 올린다?
 
-seq_length = 30
-speed = 0.03
+seq_length = 30 # 저장할 프레임 수
+speed = 0.03 # 프레임간의 간격, 데이터 수집 속도
 
 # secs_for_action = 30 # 초
-time_to_start = 2 # 초
+time_to_start = 2 # 준비시간
 
 # MediaPipe hands model
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands(
-    max_num_hands=2,
+    max_num_hands=2, # 인식하는 최대 손의 수
     min_detection_confidence=0.4,
     min_tracking_confidence=0.4)
 
@@ -109,6 +111,7 @@ while cap.isOpened():
         cv2.waitKey(int(time_to_start*1000)) 
 
         i=0
+        tmp = []
         while i < seq_length:
             time.sleep(speed)
             a+=1
@@ -125,9 +128,9 @@ while cap.isOpened():
                 d2 = np.empty(0)
                 for res in result.multi_hand_landmarks:
                     h+=1
-                    joint = np.zeros((21, 4))
+                    joint = np.zeros((21, 3))
                     for j, lm in enumerate(res.landmark):
-                        joint[j] = [lm.x, lm.y, lm.z, lm.visibility]
+                        joint[j] = [lm.x, lm.y, lm.z]
 
                     # 각 관절의 벡터 계산
                     v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19], :3] # Parent joint
@@ -146,37 +149,61 @@ while cap.isOpened():
 
                     angle = np.degrees(angle) # 라디안 -> 도
                     angle_label = np.array([angle], dtype=np.float32)
+
                     if h==1:
+                        resource1 = joint
                         d1 = np.concatenate([joint.flatten(), angle_label[0]])
                     else:
-                        d2 = np.concatenate([joint.flatten(), angle_label[0], [idx]])
-
+                        resource2 = joint
+                        d2 = np.concatenate([joint.flatten(), angle_label[0]])
+                    
                     # 파이썬 실행 화면(웹캠)에 랜드마크 그림
                     mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS)
-                
-                d=np.concatenate([d1, d2])
+
+                rate_resource = np.concatenate((resource1, resource2))
+                rate_resource = rate_resource.tolist()
+                tmp.append(rate_resource)
+                print("resource : ",rate_resource)
+
+                # ratios = hand.normalization_setting(rate_resource)
+                # print("비율 : ", ratios)
+
+                d=np.concatenate([d1, d2, [idx]])
+
                 # print(d[-1], end=' ')
                 if len(d)==99:
                     d=np.concatenate([d, np.zeros(99), [idx]])
                     # print(d)
                 data.append(d)
-                i+=1 
-               
+                i+=1
+            
             cv2.imshow('img', img)
             if cv2.waitKey(1) == ord('q'):
                 stop_=True
                 break
+
+        #print("tmp",tmp)
+
+        tmp2 = hand.normalization(tmp)
+        # print("[tmp2]",tmp2)
+        normal = []
+        for i in range(30):
+            tmp2[i] = np.array(tmp2[i]).flatten()
+        print(np.array(tmp2).shape)
+        print("normal : ",normal)
+        
+
         if stop_:
             stop_=False
             print("데이터 생성 중단")
             continue
         print("frame: ", a)
         ###
-        data = np.array(data)
+        data = np.array(tmp2)
+        #data = np.array(data)
         print(action, data.shape) #debug
-        
 
-        # if len(data) - seq_length < 1:
+        # if len(data) - seq_length < 1:4
         #     print("프레임이 너무 적어 데이터 생성에 실패했습니다.")
         #     continue
 
@@ -212,18 +239,8 @@ while cap.isOpened():
         frame_data = os.path.join(script_directory, "dataset_frame", file_name) # 프레임 데이터
         np.save(frame_data, data)   # 저장
 
-        print(f'({action}, {idx}):', data.shape, full_seq_data.shape, f'\n{file_name} 데이터 생성 완료')
-
-        
-        
+        print(f'({action}, {idx}):', data.shape, full_seq_data.shape, f'\n{file_name} 데이터 생성 완료')        
 
     if key == 27:  # ESC 키를 누르면 루프 종료
         break
     ###
-
-
-
-
-
-
-

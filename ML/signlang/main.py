@@ -22,6 +22,8 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.models import load_model
 
+import hand
+
 
 mp_holistic = mp.solutions.holistic  # holistic: 얼굴, 손 등 감지
 
@@ -92,6 +94,8 @@ async def handle_client(websocket, path):
 
         extra_time_start = time.time() # for extra_time
 
+        tmp = []
+
         while True:
             message = await websocket.recv()
             # print('오냐?')
@@ -131,18 +135,27 @@ async def handle_client(websocket, path):
                     angle = np.degrees(angle) # 라디안 -> 도
                     angle_label = np.array([angle], dtype=np.float32)
                     if h==1:
+                        resource1 = joint
                         d1 = np.concatenate([joint.flatten(), angle_label[0]])
                     else:
+                        resource2 = joint
                         d2 = np.concatenate([joint.flatten(), angle_label[0]])
                 
+                rate_resource = np.concatenate((resource1, resource2))
+                rate_resource = rate_resource.tolist()
+                tmp.append(rate_resource)
+                print("resource : ",rate_resource)
+
+                # ratios = hand.normalization_setting(rate_resource)
+                # print("비율 : ", ratios)
+
                 d=np.concatenate([d1, d2])
 
                 if len(d)==99:
                     d=np.concatenate([d, np.zeros(99)])
 
-                # print("what???",len(d))
-                seq.append(d)
-                # print("debug2", len(seq))
+                #seq.append(d)
+                seq.append(tmp)
 
 
                 dc+=1 
@@ -154,6 +167,8 @@ async def handle_client(websocket, path):
                 if len(seq)>seq_length*100:  # 과도하게 쌓임 방지
                     seq=seq[-seq_length:]
                 
+                seq = hand.normalization(seq)
+
                 # 시퀀스 데이터를 신경망 모델에 입력으로 사용할 수 있는 형태로 변환
                 input_data = np.expand_dims(np.array(seq[-seq_length:], dtype=np.float32), axis=0)
 
