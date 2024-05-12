@@ -131,30 +131,29 @@ async def handle_client(websocket, path):
                 seq.append(rate_resource)
 
                 dc+=1 
-                print(dc, "debug1.seq크기:", len(seq))
+                print(dc, "debug1:", len(seq), np.array(seq).shape)
 
                 if len(seq) < seq_length: # 시퀀스 최소치가 쌓인 이후부터 판별
                     continue
-
-                # if len(seq)>seq_length*100:  # 과도하게 쌓임 방지
                 seq=seq[-seq_length:]
-                
-                seq = hand.normalization(seq)
 
-                print("DEBUG1", np.array(seq).shape)
-                seq = np.array(seq)
+                # print("normalization legnth", len(seq), np.array(seq).shape)
+                normalized_seq = hand.normalization(seq)
+
+                # print("DEBUG1", np.array(normalized_seq).shape)
+                normalized_seq = np.array(normalized_seq)
                 seq_=[]
                 for i in range(30):
-                    seq_.append(seq[i].flatten())
-                seq = seq_
-                print("DEBUG1.1", np.array(seq_).shape)
+                    seq_.append(normalized_seq[i].flatten())
+                normalized_seq = seq_
+                # print("DEBUG1.1", np.array(seq_).shape)
                 # 시퀀스 데이터를 신경망 모델에 입력으로 사용할 수 있는 형태로 변환
-                input_data = np.expand_dims(np.array(seq[-seq_length:], dtype=np.float32), axis=0)
-                print("DEBUG1.2", np.array(input_data).shape)
+                input_data = np.expand_dims(np.array(normalized_seq[-seq_length:], dtype=np.float32), axis=0)
+                # print("DEBUG1.2", input_data.shape)
 
                 # 에러?
                 y_pred = model.predict(input_data).squeeze() # 각 동작에 대한 예측 결과 (각각의 확률)
-                print("DEBUG2")
+                # print("DEBUG2")
 
                 i_pred = int(np.argmax(y_pred)) # 최댓값 인덱스: 예측값이 가장 높은 값(동작)의 인덱스
                 conf = y_pred[i_pred] # 가장 확률 높은 동작의 확률이
