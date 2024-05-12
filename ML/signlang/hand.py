@@ -334,6 +334,6 @@ def normalization(normalize_data):
         normalize(root, tree, std_landmark)
 
         std_landmarks.append(std_landmark)
-    print(std_landmark)
+    # print(std_landmark)
 
     return std_landmarks
