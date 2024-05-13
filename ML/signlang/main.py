@@ -58,7 +58,6 @@ sentence_length = 10
 seq_length = 30
 
 
-
 async def handle_client(websocket, path):
     try:
         # sentence = []  # 현재 디버깅 용, 감지 단어 리스트 콘솔 출력
@@ -74,8 +73,9 @@ async def handle_client(websocket, path):
         min_detection_confidence=0.4,
         min_tracking_confidence=0.4)
 
-
-        tmp = []
+        angle_datas = []
+        normalize = []
+        normalize_datas = []
 
         while True:
             message = await websocket.recv()
@@ -90,81 +90,85 @@ async def handle_client(websocket, path):
                 
             if result.multi_hand_landmarks is not None:
                 h = 0 # 손 두개 감지 로직을 위한 임시 값
+                angle_data1 = np.zeros(16)
+                angle_data2 = np.zeros(16)
                 resource1 = np.zeros((21, 3))
-                resource2 = np.zeros((21, 3))
+                resource2 = np.zeros((21, 3))                
 
                 for res in result.multi_hand_landmarks: # 감지된 손의 수만큼 반복
                     h+=1
-                    joint = np.zeros((21, 3))
+                    joint = np.zeros((23, 3))
                     for j, lm in enumerate(res.landmark):
                         joint[j] = [lm.x, lm.y, lm.z]
-
+                    joint[21] = [0,0,0]
+                    joint[22] = [1,1,1]
                     # # 각 관절의 벡터 계산
-                    # v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19], :3] # Parent joint
-                    # v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], :3] # Child joint
-                    # v = v2 - v1 # [20, 3]
-                    # # 정규화 (크기 1의 단위벡터로)
-                    # v = v / np.linalg.norm(v, axis=1)[:, np.newaxis]
+                    v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19, 21], :3] # Parent joint
+                    v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20, 22], :3] # Child joint
+                    v = v2 - v1 # [20, 3]
+                    # 정규화 (크기 1의 단위벡터로)
+                    v = v / np.linalg.norm(v, axis=1)[:, np.newaxis]
 
-                    # # 내적의 arcos으로 각도 계산
-                    # ### 벡터 a 와 벡터 b 를 내적(dot product)하면 [벡터 a의 크기] × [벡터 b의 크기] × [두 벡터가 이루는 각의 cos값] 이 된다.
-                    # ### 그런데 바로 위에서 벡터들의 크기를 모두 1로 표준화시켰으므로 두 벡터의 내적값은 곧 [두 벡터가 이루는 각의 cos값]이 된다.
-                    # ### 따라서 이것을 코사인 역함수인 arccos에 대입하면 두 벡터가 이루는 각이 나오게 된다.
-                    # angle = np.arccos(np.einsum('nt,nt->n',
-                    #     v[[0,1,2,4,5,6,8,9,10,12,13,14,16,17,18],:], 
-                    #     v[[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],:])) # [15,]
-
-                    # angle = np.degrees(angle) # 라디안 -> 도
-                    # angle_label = np.array([angle], dtype=np.float32)
-
-                    if h==1:
-                        resource1 = joint
-                    else:
-                        resource2 = joint
                     # 내적의 arcos으로 각도 계산
                     ### 벡터 a 와 벡터 b 를 내적(dot product)하면 [벡터 a의 크기] × [벡터 b의 크기] × [두 벡터가 이루는 각의 cos값] 이 된다.
                     ### 그런데 바로 위에서 벡터들의 크기를 모두 1로 표준화시켰으므로 두 벡터의 내적값은 곧 [두 벡터가 이루는 각의 cos값]이 된다.
                     ### 따라서 이것을 코사인 역함수인 arccos에 대입하면 두 벡터가 이루는 각이 나오게 된다.
-                    # angle = np.arccos(np.einsum('nt,nt->n',
-                    #     v[[0,1,2,4,5,6,8,9,10,12,13,14,16,17,18],:], 
-                    #     v[[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],:])) # [15,]
+                    angle = np.arccos(np.einsum('nt,nt->n',
+                        v[[0,1,2,4,5,6,8,9,10,12,13,14,16,17,18, 0],:], 
+                        v[[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19, 20],:])) # [15,]
 
-                    # angle = np.degrees(angle) # 라디안 -> 도
-                    # angle_label = np.array([angle], dtype=np.float32)
+                    angle = np.degrees(angle) # 라디안 -> 도
+                    angle_label = np.array([angle], dtype=np.float32)
+
                     if h==1:
-                        resource1 = joint
-                        #d1 = np.concatenate([joint.flatten(), angle_label[0]])
+                        angle_data1 = angle_label[0]
+                        resource1 = angle_label[0]
                     else:
-                        resource2 = joint
-                        #d2 = np.concatenate([joint.flatten(), angle_label[0]])
-                
+                        angle_data2 = angle_label[0]
+                        resource2 = angle_label[0]
+
+                angle_data = np.concatenate((angle_data1, angle_data2))
+                angle_data = angle_data.tolist()
+                angle_datas.append(angle_data)
+
                 rate_resource = np.concatenate((resource1, resource2))
-                # print(rate_resource.shape)
                 rate_resource = rate_resource.tolist()
-                # if len(rate_resource) != 42:
-                #     print("what?")
-                #     continue
-                seq.append(rate_resource)
+                normalize.append(rate_resource)
 
                 dc+=1 
                 print(dc, "debug1:", len(seq), np.array(seq).shape)
 
-                if len(seq) < seq_length: # 시퀀스 최소치가 쌓인 이후부터 판별
+                if len(angle_datas) < seq_length: # 시퀀스 최소치가 쌓인 이후부터 판별
                     continue
                 seq=seq[-seq_length:]
+                angle_datas=angle_datas[-seq_length:]
+                normalize_datas=normalize_datas[-seq_length]
+
+                normalize_datas = hand.normalization(normalize)
+
+                temp = []
+                for i in range(30):
+                    normalize_datas[i] = np.array(normalize_datas[i]).flatten().tolist()
+
+                    temp.append(normalize_datas[i] + angle_datas[i])
+
+                    seq.append(np.array(temp[i]).flatten())
+
+                print("debug2", np.array(seq).shape)
 
                 # print("normalization legnth", len(seq), np.array(seq).shape)
-                normalized_seq = hand.normalization(seq)
+                #normalized_seq = hand.normalization(seq)
+                #print("debug2", np.array(normalized_seq).shape)
 
                 # print("DEBUG1", np.array(normalized_seq).shape)
-                normalized_seq = np.array(normalized_seq)
-                seq_=[]
-                for i in range(30):
-                    seq_.append(normalized_seq[i].flatten())
-                normalized_seq = seq_
+                #normalized_seq = np.array(normalized_seq)
+                # seq_=[]
+                # for i in range(30):
+                #     seq_.append(normalized_seq[i].flatten())
+                # normalized_seq = seq_
                 # print("DEBUG1.1", np.array(seq_).shape)
                 # 시퀀스 데이터를 신경망 모델에 입력으로 사용할 수 있는 형태로 변환
-                input_data = np.expand_dims(np.array(normalized_seq[-seq_length:], dtype=np.float32), axis=0)
+                input_data = np.expand_dims(np.array(seq[-seq_length:], dtype=np.float32), axis=0)
                 # print("DEBUG1.2", input_data.shape)
 
                 # 에러?

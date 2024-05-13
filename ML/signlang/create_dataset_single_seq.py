@@ -111,7 +111,8 @@ while cap.isOpened():
         cv2.waitKey(int(time_to_start*1000)) 
 
         i=0
-        tmp = []
+        angle_datas = []
+        normalize = []
         while i < seq_length:
             time.sleep(speed)
             a+=1
@@ -124,17 +125,20 @@ while cap.isOpened():
 
             if result.multi_hand_landmarks is not None:
                 h = 0 # 손 두개 감지 로직을 위한 임시 값
-                d1 = np.empty(0)
-                d2 = np.empty(0)
+                angle_data1 = np.zeros(16)
+                angle_data2 = np.zeros(16)
+                resource1 = np.zeros((21, 3))
+                resource2 = np.zeros((21, 3))
                 for res in result.multi_hand_landmarks:
                     h+=1
-                    joint = np.zeros((21, 3))
+                    joint = np.zeros((23, 3))
                     for j, lm in enumerate(res.landmark):
                         joint[j] = [lm.x, lm.y, lm.z]
-
+                    joint[21] = [0,0,0]
+                    joint[22] = [1,1,1]
                     # 각 관절의 벡터 계산
-                    v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19], :3] # Parent joint
-                    v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], :3] # Child joint
+                    v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19, 21], :3] # Parent joint
+                    v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20, 22], :3] # Child joint
                     v = v2 - v1 # [20, 3]
                     # 정규화 (크기 1의 단위벡터로)
                     v = v / np.linalg.norm(v, axis=1)[:, np.newaxis]
@@ -144,37 +148,36 @@ while cap.isOpened():
                     ### 그런데 바로 위에서 벡터들의 크기를 모두 1로 표준화시켰으므로 두 벡터의 내적값은 곧 [두 벡터가 이루는 각의 cos값]이 된다.
                     ### 따라서 이것을 코사인 역함수인 arccos에 대입하면 두 벡터가 이루는 각이 나오게 된다.                        
                     angle = np.arccos(np.einsum('nt,nt->n',
-                        v[[0,1,2,4,5,6,8,9,10,12,13,14,16,17,18],:], 
-                        v[[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],:])) # [15,]
+                        v[[0,1,2,4,5,6,8,9,10,12,13,14,16,17,18, 0],:], 
+                        v[[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19, 20],:])) # [15,]
 
                     angle = np.degrees(angle) # 라디안 -> 도
                     angle_label = np.array([angle], dtype=np.float32)
+                    # print("angle_label",angle_label[0])
 
                     if h==1:
+                        angle_data1 = angle_label[0]
                         resource1 = joint
-                        d1 = np.concatenate([joint.flatten(), angle_label[0]])
                     else:
+                        angle_data2 = angle_label[0]
                         resource2 = joint
-                        d2 = np.concatenate([joint.flatten(), angle_label[0]])
                     
                     # 파이썬 실행 화면(웹캠)에 랜드마크 그림
-                    mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS)
+                    mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS) 
 
-                rate_resource = np.concatenate((resource1, resource2))
-                rate_resource = rate_resource.tolist()
-                tmp.append(rate_resource)
-                print("resource : ",rate_resource)
+                angle_data = np.concatenate((angle_data1, angle_data2, [idx]))
+                angle_data = angle_data.tolist()
+                angle_datas.append(angle_data)
+
+                resource = np.concatenate((resource1, resource2))
+                rate_resource = resource.tolist()
+                normalize.append(rate_resource)
+
+                #print("resource : ",rate_resource)
 
                 # ratios = hand.normalization_setting(rate_resource)
                 # print("비율 : ", ratios)
 
-                d=np.concatenate([d1, d2, [idx]])
-
-                # print(d[-1], end=' ')
-                if len(d)==99:
-                    d=np.concatenate([d, np.zeros(99), [idx]])
-                    # print(d)
-                data.append(d)
                 i+=1
             
             cv2.imshow('img', img)
@@ -182,24 +185,30 @@ while cap.isOpened():
                 stop_=True
                 break
 
-        #print("tmp",tmp)
+        normalize_datas = hand.normalization(normalize)
+        #print(normalize_datas)
 
-        tmp2 = hand.normalization(tmp)
-        # print("[tmp2]",tmp2)
-        normal = []
+        use_data = []
         for i in range(30):
-            tmp2[i] = np.array(tmp2[i]).flatten()
-        print(np.array(tmp2).shape)
-        print("normal : ",normal)
-        
+            normalize_datas[i] = np.array(normalize_datas[i]).flatten().tolist()
+
+            use_data.append(normalize_datas[i] + angle_datas[i])
+
+            use_data[i] = np.array(use_data[i]).flatten()
+            
+        print(np.array(use_data).shape)
+        print(use_data)
+        # for i in range(30):
+        #     angle_datas[i] = np.array(angle_datas[i]).flatten()
+        # print(np.array(angle_datas).shape)
 
         if stop_:
             stop_=False
-            print("데이터 생성 중단")
+            print("데이터 생성 중단")   
             continue
         print("frame: ", a)
         ###
-        data = np.array(tmp2)
+        data = np.array(use_data)
         #data = np.array(data)
         print(action, data.shape) #debug
 
