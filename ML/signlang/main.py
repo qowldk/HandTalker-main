@@ -121,6 +121,22 @@ async def handle_client(websocket, path):
                         resource1 = joint
                     else:
                         resource2 = joint
+                    # 내적의 arcos으로 각도 계산
+                    ### 벡터 a 와 벡터 b 를 내적(dot product)하면 [벡터 a의 크기] × [벡터 b의 크기] × [두 벡터가 이루는 각의 cos값] 이 된다.
+                    ### 그런데 바로 위에서 벡터들의 크기를 모두 1로 표준화시켰으므로 두 벡터의 내적값은 곧 [두 벡터가 이루는 각의 cos값]이 된다.
+                    ### 따라서 이것을 코사인 역함수인 arccos에 대입하면 두 벡터가 이루는 각이 나오게 된다.
+                    # angle = np.arccos(np.einsum('nt,nt->n',
+                    #     v[[0,1,2,4,5,6,8,9,10,12,13,14,16,17,18],:], 
+                    #     v[[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],:])) # [15,]
+
+                    # angle = np.degrees(angle) # 라디안 -> 도
+                    # angle_label = np.array([angle], dtype=np.float32)
+                    if h==1:
+                        resource1 = joint
+                        #d1 = np.concatenate([joint.flatten(), angle_label[0]])
+                    else:
+                        resource2 = joint
+                        #d2 = np.concatenate([joint.flatten(), angle_label[0]])
                 
                 rate_resource = np.concatenate((resource1, resource2))
                 # print(rate_resource.shape)
@@ -169,6 +185,8 @@ async def handle_client(websocket, path):
                 action = actions[i_pred]
                 
                 if previous == action: continue  # 중복 전달 회피
+
+                if previous == action: continue  # 중복 전달 회피  ???
                 previous = action
 
                 seq=[]
