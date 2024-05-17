@@ -264,18 +264,29 @@ def normalization_setting(first_landmarks):
     return ratios
 
 
-def normalization(normalize_data):
+def normalization(normalize_data, check):
+    # print(normalize_data)
     # 정규화: 선수 골격을 사용자에 맞춤
     std_landmarks = []  # 전체 사이클
     for landmarks in normalize_data:
         std_landmark = []  # 한 사이클
 
         # 튜플로 제공된 데이터 리스트로 가공
-        for i in range(42):
-            std_landmark.append(
-                [landmarks[i][0] + diff[0], landmarks[i][1] + diff[1], landmarks[i][2] + diff[2]]
-                #[landmarks[i][0], landmarks[i][1], landmarks[i][2]]
-            )
+        if check == True:
+            for i in range(42):
+                std_landmark.append(
+                    [landmarks[i][0] + diff[0], landmarks[i][1] + diff[1], landmarks[i][2] + diff[2]]
+                    #[landmarks[i][0], landmarks[i][1], landmarks[i][2]]
+                )
+        else:
+            for i in range(21):
+                std_landmark.append(
+                    [landmarks[i][0] + diff[0], landmarks[i][1] + diff[1], landmarks[i][2] + diff[2]]
+                )            
+            for i in range(21):
+                std_landmark.append(
+                    [0, 0, 0]
+                )     
 
         def normalize_keypoints(std_kp1, std_kp2, ratio):
             if ratio > 1:
@@ -294,6 +305,7 @@ def normalization(normalize_data):
         def normalize(root, tree, std_landmark):
             # 재귀적으로 전위탐색 수행
             def traverse(node):
+                #print(node)
                 if node in tree:
                     for child in tree[node]:
                         std_kp1 = std_landmark[index[node]]
@@ -330,17 +342,10 @@ def normalization(normalize_data):
         tree = build_tree(order)
         normalize(root, tree, std_landmark)
 
-        print("1111111111111111111",std_landmark)
+        root = 21
+        normalize(root, tree, std_landmark)
 
-        if landmarks[21][0] != 0 and landmarks[21][0] != 0 and landmarks[21][0] != 0:
-            root = 21
-            normalize(root, tree, std_landmark)
-        else:
-            std_landmark[-21:] = [[0, 0, 0]] * 21
-            break
-
-        print("222222222222222222",std_landmark)
-
+        #print("1111111111111111",std_landmark)
         std_landmarks.append(std_landmark)
 
     return std_landmarks

@@ -73,7 +73,6 @@ async def handle_client(websocket, path):
         min_detection_confidence=0.4,
         min_tracking_confidence=0.4)
 
-        angle_datas = []
         normalize = []
         normalize_datas = []
 
@@ -122,53 +121,54 @@ async def handle_client(websocket, path):
 
                     if h==1:
                         angle_data1 = angle_label[0]
-                        resource1 = angle_label[0]
+                        resource1 = joint[0:21]
+                        # print(len(resource1))
                     else:
                         angle_data2 = angle_label[0]
-                        resource2 = angle_label[0]
+                        resource2 = joint[0:21]
+                        # print(len(resource2))
 
                 angle_data = np.concatenate((angle_data1, angle_data2))
                 angle_data = angle_data.tolist()
-                angle_datas.append(angle_data)
+                seq.append(angle_data)
+                #print("seq",seq)
 
-                rate_resource = np.concatenate((resource1, resource2))
-                rate_resource = rate_resource.tolist()
+                resource = np.concatenate((resource1, resource2))
+                rate_resource = resource.tolist()
                 normalize.append(rate_resource)
 
                 dc+=1 
-                print(dc, "debug1:", len(seq), np.array(seq).shape)
+                # print(dc, "debug1:", len(seq), np.array(seq).shape)
 
-                if len(angle_datas) < seq_length: # 시퀀스 최소치가 쌓인 이후부터 판별
+                if len(seq) < seq_length: # 시퀀스 최소치가 쌓인 이후부터 판별
                     continue
+
                 seq=seq[-seq_length:]
-                angle_datas=angle_datas[-seq_length:]
-                normalize_datas=normalize_datas[-seq_length]
 
-                normalize_datas = hand.normalization(normalize)
+                print(len(normalize))
+                if len(normalize) >= seq_length:
+                    normalize = normalize[-seq_length:]
+                    # print(normalize)
 
+                    if h == 1:
+                        normalize_datas = hand.normalization(normalize, False)
+                    else:
+                        normalize_datas = hand.normalization(normalize, True)
+                    print(np.array(normalize_datas).shape)
+                    #print(normalize_datas)
+                    
                 temp = []
                 for i in range(30):
                     normalize_datas[i] = np.array(normalize_datas[i]).flatten().tolist()
+                    # print("aaaaaaaaaaaaaaaaaaaaa",np.array(normalize_datas).shape)
+                    temp.append(normalize_datas[i] + seq[i])
 
-                    temp.append(normalize_datas[i] + angle_datas[i])
+                    temp[i] = (np.array(temp[i]).flatten())
 
-                    seq.append(np.array(temp[i]).flatten())
+                print("debug2", np.array(temp).shape)
 
-                print("debug2", np.array(seq).shape)
-
-                # print("normalization legnth", len(seq), np.array(seq).shape)
-                #normalized_seq = hand.normalization(seq)
-                #print("debug2", np.array(normalized_seq).shape)
-
-                # print("DEBUG1", np.array(normalized_seq).shape)
-                #normalized_seq = np.array(normalized_seq)
-                # seq_=[]
-                # for i in range(30):
-                #     seq_.append(normalized_seq[i].flatten())
-                # normalized_seq = seq_
-                # print("DEBUG1.1", np.array(seq_).shape)
                 # 시퀀스 데이터를 신경망 모델에 입력으로 사용할 수 있는 형태로 변환
-                input_data = np.expand_dims(np.array(seq[-seq_length:], dtype=np.float32), axis=0)
+                input_data = np.expand_dims(np.array(temp[-seq_length:], dtype=np.float32), axis=0)
                 # print("DEBUG1.2", input_data.shape)
 
                 # 에러?
@@ -194,7 +194,7 @@ async def handle_client(websocket, path):
                 previous = action
 
                 seq=[]
-
+                temp = []
 
                 result_dict = {'result': action}
                 result_json = json.dumps(result_dict)

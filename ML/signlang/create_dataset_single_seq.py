@@ -157,10 +157,10 @@ while cap.isOpened():
 
                     if h==1:
                         angle_data1 = angle_label[0]
-                        resource1 = joint
+                        resource1 = joint[0:21]
                     else:
                         angle_data2 = angle_label[0]
-                        resource2 = joint
+                        resource2 = joint[0:21]
                     
                     # 파이썬 실행 화면(웹캠)에 랜드마크 그림
                     mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS) 
@@ -184,8 +184,11 @@ while cap.isOpened():
             if cv2.waitKey(1) == ord('q'):
                 stop_=True
                 break
-
-        normalize_datas = hand.normalization(normalize)
+        #print(normalize)
+        if h == 1:
+            normalize_datas = hand.normalization(normalize, False)
+        else:
+            normalize_datas = hand.normalization(normalize, True)
         #print(normalize_datas)
 
         use_data = []
@@ -197,7 +200,7 @@ while cap.isOpened():
             use_data[i] = np.array(use_data[i]).flatten()
             
         print(np.array(use_data).shape)
-        print(use_data)
+        # print(use_data)
         # for i in range(30):
         #     angle_datas[i] = np.array(angle_datas[i]).flatten()
         # print(np.array(angle_datas).shape)
