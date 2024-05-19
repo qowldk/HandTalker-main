@@ -179,7 +179,7 @@ async def handle_client(websocket, path):
                 conf = y_pred[i_pred] # 가장 확률 높은 동작의 확률이
 
                 print("conf debug", conf)
-                if conf < 0.8:   # 90% 이상일 때만 수행
+                if conf < 0.7:   # 90% 이상일 때만 수행
                     continue
 
                 # debug
@@ -188,10 +188,8 @@ async def handle_client(websocket, path):
 
                 action = actions[i_pred]
                 
-                if previous == action: continue  # 중복 전달 회피
-
-                if previous == action: continue  # 중복 전달 회피  ???
-                previous = action
+                # if previous == action: continue  # 중복 전달 회피
+                # previous = action
 
                 seq=[]
                 temp = []
