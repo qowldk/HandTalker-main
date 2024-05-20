@@ -157,9 +157,8 @@ while cap.isOpened():
                 
                 d=np.concatenate([d1, d2])
                 # print(d[-1], end=' ')
-                if len(d)<=16:
+                if len(d)<=17:
                     d=np.concatenate([d, np.zeros(len(d)), [idx]])
-                    # print(d)
                 data.append(d)
                 i+=1 
                

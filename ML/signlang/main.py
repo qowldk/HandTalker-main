@@ -127,7 +127,7 @@ async def handle_client(websocket, path):
                 
                 d=np.concatenate([d1, d2])
 
-                if len(d)<=16:
+                if len(d)<=17:
                     d=np.concatenate([d, np.zeros(len(d))])
 
                 # print("what???",len(d))
