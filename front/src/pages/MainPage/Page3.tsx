@@ -1,8 +1,10 @@
-import school from "../../assets/icons/school.webp";
-import hospital from "../../assets/icons/hospital.webp";
-import work from "../../assets/icons/work.webp";
+import school2 from "../../assets/icons/school.webp";
+import school from "../../assets/icons/school.jpg";
+import hospital2 from "../../assets/icons/hospital.webp";
+import work2 from "../../assets/icons/work.webp";
+import work from "../../assets/icons/work.png";
 import logo2 from "../../assets/icons/SignLanguage2.png";
-
+import hospital from "../../assets/icons/hospital.jpg";
 const Page3 = () => {
   return (
     <div
@@ -16,7 +18,7 @@ const Page3 = () => {
         HandTalker는 많은 곳에서 사용할 수 있는 확장성 높은 서비스입니다.
       </p>
       <div className="flex flex-col md:flex-row items-center justify-center mt-[40px] space-y-6 md:space-y-0">
-        <div className="w-[21.25rem] h-auto md:mr-[30px] border-b-2 border-b-icon border border-gray-100 shadow-lg flex flex-col items-center justify-start">
+        <div className="w-[21.25rem] h-auto md:mr-[30px] border-b-2  border border-gray-100 shadow-lg flex flex-col items-center justify-start">
           <div className="flex flex-row items-center justify-center py-[0.7rem] md:pt-[3.125rem] md:flex-col">
             <img
               src={school}
@@ -33,7 +35,7 @@ const Page3 = () => {
             있습니다.
           </p>
         </div>
-        <div className="w-[21.25rem] h-auto md:mr-[30px] border-b-2 border-b-icon border border-gray-100 shadow-lg flex flex-col items-center justify-start">
+        <div className="w-[21.25rem] h-auto md:mr-[30px] border-b-2 border border-gray-100 shadow-lg flex flex-col items-center justify-start">
           <div className="flex flex-row items-center justify-center py-[0.7rem] md:pt-[3.125rem] md:flex-col">
             <img
               src={hospital}
@@ -49,7 +51,7 @@ const Page3 = () => {
             </p>
           </div>
         </div>
-        <div className="w-[21.25rem] h-auto md:mr-[30px] border-b-2 border-b-icon border border-gray-100 shadow-lg flex flex-col items-center justify-start">
+        <div className="w-[21.25rem] h-auto md:mr-[30px] border-b-2 border border-gray-100 shadow-lg flex flex-col items-center justify-start">
           <div className="flex flex-row items-center justify-center py-[0.7rem] md:pt-[3.125rem] md:flex-col">
             <img
               src={work}

@@ -1,6 +1,7 @@
 import LazyLoad from "react-lazy-load";
 import logo from "../../assets/icons/logo.svg";
-import main from "../../assets/images/main.webp";
+import main2 from "../../assets/images/main.webp";
+import main from "../../assets/images/mainImg2.png";
 import { Link } from "react-router-dom";
 import logo2 from "../../assets/icons/SignLanguage2.png";
 
@@ -19,13 +20,15 @@ const Page1 = () => {
         </LazyLoad>
 
         <p className="text-lg text-gray-400 font-main mb-[10px]">
-          HandTalker와 함께라면
+          Signlanguage와 함께라면
           <br /> 언제든 수어 번역 서비스를 이용하실 수 있습니다.
+          <br/> 의료진과 농인 환자 사이의 원활한 소통을 돕기 위해 제공되고 있습니다. 
         </p>
         <Link to="/translate">
-          <button className="bg-green-500 text-white font-main text-base rounded-md mb-[10px] w-[200px] h-[50px] ">
-            번역 서비스 사용해보기
-          </button>
+        <button className="bg-blue-500 text-white font-main text-base rounded-md mb-[10px] w-[200px] h-[50px] ">
+      번역 서비스 사용해보기
+      </button>
+
         </Link>
       </div>
       <img

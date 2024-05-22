@@ -40,9 +40,7 @@ const MainPage = () => {
         <Section>
           <Page3 />
         </Section>
-        <Section>
-          <Page4 />
-        </Section>
+    
     
       </SectionsContainer>
     </div>

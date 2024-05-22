@@ -32,14 +32,7 @@ const Header = () => {
     },
   });
 
-  const logoutHandler = () => {
-    localStorage.removeItem("UID");
-    setAuth(false);
-    Toast.fire({
-      icon: "success",
-      title: "로그아웃 성공!",
-    });
-  };
+
 
   return (
     <>
@@ -70,26 +63,7 @@ const Header = () => {
             name="번역"
             link="/translate"
           />
-          <HeaderButton
-            isClicked={path === "/plugin" ? true : false}
-            name="플러그인"
-            link="/plugin"
-          />
-          {auth ? (
-            <div
-              className={`w-20
-       h-full font-main text-base text-black flex flex-col justify-center items-center cursor-pointer`}
-              onClick={logoutHandler}
-            >
-              로그아웃
-            </div>
-          ) : (
-            <HeaderButton
-              isClicked={path === "/login" ? true : false}
-              name="로그인"
-              link="/login"
-            />
-          )}
+    
         </div>
       </div>
     </>
