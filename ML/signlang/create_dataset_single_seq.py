@@ -210,7 +210,7 @@ while cap.isOpened():
         # 프레임 단위 데이터 저장 디렉토리
         file_name = str(idx) + '_' + str(action) + '_s_'+str(save_file_num)+'.npy'
         frame_data = os.path.join(script_directory, "dataset_frame", file_name) # 프레임 데이터
-        np.save(frame_data, data)   # 저장
+        # np.save(frame_data, data)   # 저장
 
         print(f'({action}, {idx}):', data.shape, full_seq_data.shape, f'\n{file_name} 데이터 생성 완료')
 

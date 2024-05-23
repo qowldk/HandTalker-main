@@ -2,7 +2,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import json
-import keyboard
+#import keyboard
 import time
 """
 손의 제스처를 사용하여 텍스트를 입력하고, 그 입력된 텍스트를 JSON 파일에 저장
@@ -25,7 +25,7 @@ hands = mp_hands.Hands(
     min_tracking_confidence=0.5
 )
 
-file = np.genfromtxt('dataSet.txt', delimiter=',')
+file = np.genfromtxt('dataSet_ko.txt', delimiter=',')
 angleFile = file[:, :-1]
 labelFile = file[:, -1]
 angle = angleFile.astype(np.float32)
@@ -52,17 +52,17 @@ while True:
 
     if result.multi_hand_landmarks is not None:
         for res in result.multi_hand_landmarks:
-            joint = np.zeros((21, 3))
+            joint = np.zeros((23, 3))
             for j, lm in enumerate(res.landmark):
                 joint[j] = [lm.x, lm.y, lm.z]
 
-            v1 = joint[[0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19], :]
-            v2 = joint[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], :]
+            v1 = joint[[0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19, 21], :]
+            v2 = joint[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22], :]
             v = v2 - v1
             v = v / np.linalg.norm(v, axis=1)[:, np.newaxis]
 
-            compareV1 = v[[0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 16, 17], :]
-            compareV2 = v[[1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19], :]
+            compareV1 = v[[0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 16, 17, 0, 16], :]
+            compareV2 = v[[1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19, 20, 20], :]
             angle = np.arccos(np.einsum('nt,nt->n', compareV1, compareV2))
             angle = np.degrees(angle)
 

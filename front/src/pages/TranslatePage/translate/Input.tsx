@@ -44,56 +44,83 @@ const Input = forwardRef<ChildProps>((props, ref) => {
   };
 
   // useEffect(()=>{console.log("디버그!!", previous)}, [previous]);
-	useImperativeHandle(ref, () => ({
-	  // 부모에서 사용하고자 하는 함수이름
+   useImperativeHandle(ref, () => ({
+     // 부모에서 사용하고자 하는 함수이름
     send_words,
-	}));
+   }));
 
 
   /*  랜드마크들의 좌표를 콘솔에 출력 및 websocket으로 전달 */
+  // const OutputData = useCallback(() => {
+  //   if (webcamRef.current !== null) {
+  //     const results = resultsRef.current!;
+  //     if (resultsRef.current) {
+  //       console.log(results.rightHandLandmarks);
+  //       // 웹소켓으로 데이터 전송
+  //       if (socketRef_hands.current.readyState === WebSocket.OPEN) {
+  //         socketRef_hands.current.send(
+  //           JSON.stringify(results.rightHandLandmarks)
+  //         );
+  //         console.log("hands sended");
+  //       } else {
+  //         console.error("ws connection is not open. (8081)");
+  //       }
+  //     }
+  //   }
+  // }, [webcamRef]);
   const OutputData = useCallback(() => {
-    if (webcamRef.current !== null) {
-      const results = resultsRef.current!;
-      if (resultsRef.current) {
-        console.log(results.rightHandLandmarks);
-        // 웹소켓으로 데이터 전송
-        if (socketRef_hands.current.readyState === WebSocket.OPEN) {
-          socketRef_hands.current.send(
-            JSON.stringify(results.rightHandLandmarks)
-          );
-          console.log("hands sended");
-        } else {
-          console.error("ws connection is not open. (8081)");
-        }
+    const imageSrc = webcamRef.current?.getScreenshot();
+    const imgData: string | undefined = imageSrc?.toString()?.substr(23);
+    if (imgData && isChecked) {
+      if (socketRef_hands.current.readyState === WebSocket.OPEN) {
+        socketRef_hands.current.send(imgData);
+      } else {
+        console.error("ws connection is not open. (8081)");
+        // socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
+        // window.location.reload();
+        setText("8081 disconected");
+        // alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
       }
+      // console.log(imgData);
     }
-  }, [webcamRef]);
+  }, [webcamRef, isChecked]);
 
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
     const imgData: string | undefined = imageSrc?.toString()?.substr(23);
-    if (imgData && !isChecked) {
+    if (imgData && !isChecked && !isGenerating) {
       if (socketRef.current.readyState === WebSocket.OPEN) {
         socketRef.current.send(imgData);
       } else {
         console.error("ws connection is not open. (8080)");
         // socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
         // window.location.reload();
-        alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
+        setText("웹소켓 연결 끊김");
+        // alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
       }
       // console.log(imgData);
     }
-  }, [webcamRef]);
-  const send_words = useCallback(() => {
+  }, [webcamRef, isChecked, isGenerating]);
+  const send_words = useCallback(() => { // 서버에 프레임 전송 stop
+    if (isChecked) return; // 지문자모드 x
+    if (socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send("STOP");
+    } else {
+      console.error("ws connection is not open. (8080)");
+      // socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
+      // window.location.reload();
+      setText("FAILED");
+      // alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
+    }
     // if (text && !isChecked) {
       // console.log("APICALLDEBUG1", socketRef_LLM.current.readyState, WebSocket.OPEN, socketRef_LLM.current.readyState === WebSocket.OPEN);
-      if (text==='') return;
-      if (socketRef_LLM.current.readyState === WebSocket.OPEN) {
-        // console.log("debug_LLM", text);
-        socketRef_LLM.current.send(text);
-      } else {
-        console.error("ws connection is not open. (8082)");
-      }
+      // if (text==='') return;
+      // if (socketRef_LLM.current.readyState === WebSocket.OPEN) {
+      //   // console.log("debug_LLM", text);
+      //   socketRef_LLM.current.send(text);
+      // } else {
+      //   console.error("ws connection is not open. (8082)");
+      // }
     // }
   }, [text]);
 
@@ -240,6 +267,10 @@ const Input = forwardRef<ChildProps>((props, ref) => {
     const jsonString = JSON.parse(event.data);
     console.log(`receive string: ${jsonString.result}`);
     if (!isChecked){
+      if (jsonString.result==="END"){
+        setIsGenerating(false);
+        return;
+      }
       if (previous !== jsonString.result){
         if (jsonString.result==='') return;
         setText(text + ' ' + jsonString.result);

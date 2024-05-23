@@ -167,14 +167,14 @@ while cap.isOpened():
                 d2 = np.empty(0)
                 for res in result.multi_hand_landmarks:
                     h+=1
-                    joint = np.zeros((21, 4))
+                    joint = np.zeros((23, 3))
                     for j, lm in enumerate(res.landmark):
-                        joint[j] = [lm.x, lm.y, lm.z, lm.visibility]
+                        joint[j] = [lm.x, lm.y, lm.z]
                     joint[21] = [0,0,0]
                     joint[22] = [1,1,1]
                     # 각 관절의 벡터 계산
                     v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19,21], :3] # Parent joint
-                    v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21], :3] # Child joint
+                    v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22], :3] # Child joint
                     v = v2 - v1 # [20, 3]
                     # 정규화 (크기 1의 단위벡터로)
                     v = v / np.linalg.norm(v, axis=1)[:, np.newaxis]
@@ -234,7 +234,7 @@ while cap.isOpened():
                 conf = y_pred[i_pred] # 가장 확률 높은 동작의 확률이
     
                 print("conf debug", conf)
-                if conf < 0.8:   # 90% 이상일 때만 수행
+                if conf < 0.7:
                     continue
 
                 action = actions[i_pred]

@@ -102,7 +102,12 @@ const Translate = () => {
   return (
     <div className="mt-[5rem] md:mt-[7rem] flex flex-col items-center justify-start w-full h-full mx-auto mb-[4rem]">
       {openModal && <ConfigModal onOpenModal={onModalAlert} />}
-    
+      <button
+        onClick={onModalAlert}
+        className="w-[8rem] h-[2.5rem] md:w-[160px] md:h-[3rem] font-main text-xl font-bold items-end justify-end ml-[12rem] md:ml-[48.7rem] xl:ml-[67.5rem] text-white bg-black rounded-lg"
+      >
+        연동 설정
+      </button>
       <div className="flex flex-col items-center justify-center mt-2 md:flex-row">
         {translate ? <Input ref={childComponentRef} /> : <NotTranslating />}
         <p className="hidden md:block ml-[40px] text-6xl text-gray-200">
