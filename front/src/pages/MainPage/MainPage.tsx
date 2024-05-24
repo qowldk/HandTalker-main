@@ -1,3 +1,4 @@
+import React from "react";
 import Header from "../../components/Header/Header";
 import Page1 from "./Page1";
 import Page2 from "./Page2";
@@ -5,6 +6,7 @@ import Page3 from "./Page3";
 import Page4 from "./Page4";
 import Page5 from "./Page5";
 import { SectionsContainer, Section } from "react-fullpage";
+import "./MainPage.css"; // CSS 파일을 import
 
 let options = {
   activeClass: "active", // the class that is appended to the sections links
@@ -28,7 +30,7 @@ let options = {
 
 const MainPage = () => {
   return (
-    <div className="flex flex-col">
+    <div className="flex">
       <Header />
       <SectionsContainer {...options}>
         <Section>

@@ -1,0 +1,26 @@
+/* MainPage.css */
+.flex {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .SectionContainer {
+    width: 100%;
+  }
+  
+  .Section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 0;
+  }
+  
+  /* 반응형 스타일 */
+  @media (max-width: 768px) {
+    .Section {
+      height: auto;
+      padding: 20px;
+    }
+  }
+  
