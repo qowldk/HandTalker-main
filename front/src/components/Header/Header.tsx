@@ -20,32 +20,25 @@ const Header = () => {
     setOpen(!open);
   };
 
-  const Toast = Swal.mixin({
-    toast: true,
-    position: "top-right",
-    showConfirmButton: false,
-    timer: 1500,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.addEventListener("mouseenter", Swal.stopTimer);
-      toast.addEventListener("mouseleave", Swal.resumeTimer);
-    },
-  });
+  // const Toast = Swal.mixin({
+  //   toast: true,
+  //   position: "top-right",
+  //   showConfirmButton: false,
+  //   timer: 1500,
+  //   timerProgressBar: true,
+  //   didOpen: (toast) => {
+  //     toast.addEventListener("mouseenter", Swal.stopTimer);
+  //     toast.addEventListener("mouseleave", Swal.resumeTimer);
+  //   },
+  // });
 
 
 
   return (
     <>
       {open && <Drawer onOpen={openHandler} isOpen={open} />}
-      <div className="px-6 flex lg:hidden bg-navy bg-opacity-70 top-0 fixed z-10 w-full h-[3.1rem] border-b border-gray border-navy flex-row justify-between items-center">
-        <Link to="/" className="flex items-center justify-center w-full"> {/* 이미지를 감싸는 div 요소에 flex와 justify-center 클래스 추가 */}
-          <img src={sl} alt="sl" className="inline w-auto h-16 mx-auto" /> {/* 이미지 크기 조정 및 수평 가운데 정렬 */}
-        </Link>
-        <button type="button" onClick={openHandler}>
-          <img src={menu} alt="menu" className="inline" />
-        </button>
-      </div>
-      <div className="hidden lg:flex bg-navy bg-opacity-70 top-0 fixed z-10 w-full h-[4.5rem] border-b border-gray border-navy flex-row justify-between items-center">
+     
+      <div className="hidden lg:flex bg-navy bg-opacity-70 top-0 fixed z-10 w-full h-[4.5rem] flex-row justify-between items-center">
         <div className="ml-[10rem]">
           <Link to="/" className="flex items-center justify-center w-full"> {/* 이미지를 감싸는 div 요소에 flex와 justify-center 클래스 추가 */}
             <img src={sl} alt="sl" className="w-auto h-16 items-center justify-center mx-auto" /> {/* 이미지 크기 조정 및 수평 가운데 정렬 */}
