@@ -171,14 +171,9 @@ def frame_processor():
 
 key = os.environ.get('API_KEY')
 
-
-
-
-from dotenv import load_dotenv
-
 from openai import OpenAI
 
-client = OpenAI(api_key = "여기에 키!")
+client = OpenAI(api_key = key)
 system_role = """
 당신은 환자의 입장에서 글을 작성하는 Assistant입니다.
 

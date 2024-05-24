@@ -6,9 +6,8 @@ import os, time
 # 한 시퀀스씩 저장하는 대신 에포크를 100n ~ 1000배 올린다?
 
 seq_length = 30
-speed = 0.03
+speed = 0.1667
 
-# secs_for_action = 30 # 초
 time_to_start = 2 # 초
 
 # MediaPipe hands model
@@ -73,16 +72,6 @@ while cap.isOpened():
                 print("정수 값을 입력해주세요.")
         print(f'({action}, {idx}) 입력 완료')
         # print(anounce_for_user)
-    
-    # if key == ord('t'):
-    #     while True:
-    #         secs_for_action = input(f'{secs_for_action} -> ')
-    #         try:
-    #             secs_for_action = float(secs_for_action)
-    #             break
-    #         except ValueError:
-    #             print("실수 값을 입력해주세요.")            
-    #     print('데이터 입력 시간 변경 완료')
 
     if key == ord('y'):
         while True:
