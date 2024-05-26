@@ -26,4 +26,4 @@ pip install python-dotenv
 
 conda install openai
 
-server 폴더의 start_server.py 실행
+server/signlang/main.py 실행

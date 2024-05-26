@@ -40,9 +40,8 @@ const Input = forwardRef<ChildProps>((props, ref) => {
     setPrevious("");
   };
 
-  // useEffect(()=>{console.log("디버그!!", previous)}, [previous]);
 	useImperativeHandle(ref, () => ({
-	  // 부모에서 사용하고자 하는 함수이름
+	  // 부모 컴포넌트에서 사용할 함수이름
     send_words,
 	}));
 
@@ -54,12 +53,8 @@ const Input = forwardRef<ChildProps>((props, ref) => {
         socketRef_hands.current.send(imgData);
       } else {
         console.error("ws connection is not open. (8081)");
-        // socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
-        // window.location.reload();
         setText("Server2 disconected");
-        // alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
       }
-      // console.log(imgData);
     }
   }, [webcamRef, isChecked]);
 
@@ -71,25 +66,17 @@ const Input = forwardRef<ChildProps>((props, ref) => {
         socketRef.current.send(imgData);
       } else {
         console.error("ws connection is not open. (8080)");
-        // socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
-        // window.location.reload();
         setText("Server Disconnected");
-        // alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
       }
-      // console.log(imgData);
     }
   }, [webcamRef, isChecked]);
   const send_words = useCallback(() => {
-    // if (text && !isChecked) {
-      // console.log("APICALLDEBUG1", socketRef_LLM.current.readyState, WebSocket.OPEN, socketRef_LLM.current.readyState === WebSocket.OPEN);
       if (text==='') return;
       if (socketRef_LLM.current.readyState === WebSocket.OPEN) {
-        // console.log("debug_LLM", text);
         socketRef_LLM.current.send(text);
       } else {
         console.error("ws connection is not open. (8082)");
       }
-    // }
   }, [text]);
 
 
@@ -103,13 +90,10 @@ const Input = forwardRef<ChildProps>((props, ref) => {
     }
   }, [capture, webcamRef, OutputData, isChecked]);
 
-  /**
-   * 검출결과（프레임마다 호출됨）
-   * @param results
-   */
+
   const onPoseResults = useCallback((results: HolisticResults) => {
     const canvasElement = canvasPoseRef.current!;
-    const canvasCtx = canvasElement.getContext("2d"); // 에러??
+    const canvasCtx = canvasElement.getContext("2d");
     if (canvasCtx === null) {
       return;
     }
@@ -184,7 +168,6 @@ const Input = forwardRef<ChildProps>((props, ref) => {
     ) {
       const camera = new Camera(webcamRef.current.video!, {
         onFrame: async () => {
-          // await hands.send({ image: webcamRef.current!.video! });
           await holistic.send({ image: webcamRef.current!.video! });
         },
         width: 1280,
@@ -213,9 +196,6 @@ const Input = forwardRef<ChildProps>((props, ref) => {
       if (previous !== jsonString.result){
         if (jsonString.result==='') return;
         setText(text + ' ' + jsonString.result);
-        // console.log("before API call", text);
-        // send_words();
-        // console.log("after API call", text);
         setPrevious(jsonString.result)
       }      
     }
@@ -283,7 +263,7 @@ const Input = forwardRef<ChildProps>((props, ref) => {
           className="sr-only"
         />
         <span className="flex items-center text-sm font-medium text-black text-white font-main label">
-          지문자 모드
+          지문자
         </span>
         <span
           className={`slider mx-4 flex h-8 w-[60px] items-center rounded-full p-1 duration-200 ${
