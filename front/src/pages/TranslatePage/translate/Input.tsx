@@ -8,8 +8,6 @@ import {
   POSE_CONNECTIONS,
 } from "@mediapipe/holistic";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
-// import { Hands, Results } from "@mediapipe/hands";
-// import { drawCanvas } from "../../../utils/translate/drawCanvas";
 import { useRecoilState } from "recoil";
 import { resultText, isGeneratingSentence } from "../../../utils/recoil/atom";
 
@@ -29,7 +27,6 @@ const Input = forwardRef<ChildProps>((props, ref) => {
   const transmission_frequency = 1000/30;  // 8080 전송 주기
 
   const [previous, setPrevious] = useState('') // 웹소켓으로부터 받은 이전 단어
-  // const [intervalTime, setIntervalTime] = useState(1000/30);
 
   const [loading, setLoading] = useState<boolean>(true);
   const handleUserMedia = () => setTimeout(() => setLoading(false), 1_000);
@@ -44,30 +41,11 @@ const Input = forwardRef<ChildProps>((props, ref) => {
   };
 
   // useEffect(()=>{console.log("디버그!!", previous)}, [previous]);
-   useImperativeHandle(ref, () => ({
-     // 부모에서 사용하고자 하는 함수이름
+	useImperativeHandle(ref, () => ({
+	  // 부모에서 사용하고자 하는 함수이름
     send_words,
-   }));
+	}));
 
-
-  /*  랜드마크들의 좌표를 콘솔에 출력 및 websocket으로 전달 */
-  // const OutputData = useCallback(() => {
-  //   if (webcamRef.current !== null) {
-  //     const results = resultsRef.current!;
-  //     if (resultsRef.current) {
-  //       console.log(results.rightHandLandmarks);
-  //       // 웹소켓으로 데이터 전송
-  //       if (socketRef_hands.current.readyState === WebSocket.OPEN) {
-  //         socketRef_hands.current.send(
-  //           JSON.stringify(results.rightHandLandmarks)
-  //         );
-  //         console.log("hands sended");
-  //       } else {
-  //         console.error("ws connection is not open. (8081)");
-  //       }
-  //     }
-  //   }
-  // }, [webcamRef]);
   const OutputData = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
     const imgData: string | undefined = imageSrc?.toString()?.substr(23);
@@ -78,7 +56,7 @@ const Input = forwardRef<ChildProps>((props, ref) => {
         console.error("ws connection is not open. (8081)");
         // socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
         // window.location.reload();
-        setText("8081 disconected");
+        setText("Server2 disconected");
         // alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
       }
       // console.log(imgData);
@@ -88,39 +66,29 @@ const Input = forwardRef<ChildProps>((props, ref) => {
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
     const imgData: string | undefined = imageSrc?.toString()?.substr(23);
-    if (imgData && !isChecked && !isGenerating) {
+    if (imgData && !isChecked) {
       if (socketRef.current.readyState === WebSocket.OPEN) {
         socketRef.current.send(imgData);
       } else {
         console.error("ws connection is not open. (8080)");
         // socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
         // window.location.reload();
-        setText("웹소켓 연결 끊김");
+        setText("Server Disconnected");
         // alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
       }
       // console.log(imgData);
     }
-  }, [webcamRef, isChecked, isGenerating]);
-  const send_words = useCallback(() => { // 서버에 프레임 전송 stop
-    if (isChecked) return; // 지문자모드 x
-    if (socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send("STOP");
-    } else {
-      console.error("ws connection is not open. (8080)");
-      // socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
-      // window.location.reload();
-      setText("FAILED");
-      // alert("8080 closed.\n8080 웹소켓 연결이 끊겨버리는 현상이 있으며, 새로고침 시 재연결 가능하다.\n원인은 혼잡 상황 발생 또는 일정 시간 미사용 등으로 추정.");
-    }
+  }, [webcamRef, isChecked]);
+  const send_words = useCallback(() => {
     // if (text && !isChecked) {
       // console.log("APICALLDEBUG1", socketRef_LLM.current.readyState, WebSocket.OPEN, socketRef_LLM.current.readyState === WebSocket.OPEN);
-      // if (text==='') return;
-      // if (socketRef_LLM.current.readyState === WebSocket.OPEN) {
-      //   // console.log("debug_LLM", text);
-      //   socketRef_LLM.current.send(text);
-      // } else {
-      //   console.error("ws connection is not open. (8082)");
-      // }
+      if (text==='') return;
+      if (socketRef_LLM.current.readyState === WebSocket.OPEN) {
+        // console.log("debug_LLM", text);
+        socketRef_LLM.current.send(text);
+      } else {
+        console.error("ws connection is not open. (8082)");
+      }
     // }
   }, [text]);
 
@@ -229,31 +197,6 @@ const Input = forwardRef<ChildProps>((props, ref) => {
   const socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
   const socketRef_hands = useRef<WebSocket>(new WebSocket("ws://localhost:8081"));
   const socketRef_LLM = useRef<WebSocket>(new WebSocket("ws://localhost:8082"));
-
-  // useEffect(() => {
-  //   if (isChecked) {
-  //     if (socketRef.current.readyState === WebSocket.OPEN) {
-  //       socketRef.current.close();
-  //       console.log("disconnected");
-  //       const socket = new WebSocket("ws://localhost:8081");
-  //       socketRef.current = socket; // 지문자 모드
-  //       console.log("changed");
-  //     }
-  //   } else {
-  //     if (socketRef.current.readyState === WebSocket.OPEN) {
-  //       socketRef.current.close();
-  //       console.log("disconnected");
-  //       const socket = new WebSocket("ws://localhost:8080");
-  //       socketRef.current = socket;
-  //       console.log("changed");
-  //     }
-  //   }
-
-  //   return () => {
-  //     socketRef.current.onclose = () => {}; // 연결 종료 메시지를 방지하기 위해 빈 함수를 설정합니다.
-  //     socketRef.current.close();
-  //   };
-  // }, [isChecked]);
   
   socketRef_LLM.current.onmessage = (event) =>{
     console.log(`receive message(LLM): ${event.data}`);
@@ -267,10 +210,6 @@ const Input = forwardRef<ChildProps>((props, ref) => {
     const jsonString = JSON.parse(event.data);
     console.log(`receive string: ${jsonString.result}`);
     if (!isChecked){
-      if (jsonString.result==="END"){
-        setIsGenerating(false);
-        return;
-      }
       if (previous !== jsonString.result){
         if (jsonString.result==='') return;
         setText(text + ' ' + jsonString.result);

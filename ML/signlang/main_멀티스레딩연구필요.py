@@ -40,6 +40,8 @@ MODEL_PATH = os.path.join(script_directory, 'model_ko.h5')
 model = load_model(MODEL_PATH, compile=False)  # 코랩 사용시 compile=False 필수
 
 
+exit_flag = threading.Event()
+
 
 word_list = 'db.txt'
 
@@ -79,11 +81,11 @@ extra_time = 2.5  # 다음 동작 전달까지 텀
 frame_queue = queue.Queue()
 result_queue = queue.Queue()
 
+exit_count = 0
+
 def frame_processor():
-    global frame_queue
     seq = []
     previous = ''
-    extra_time_start = time.time()
     
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(
@@ -92,18 +94,24 @@ def frame_processor():
         min_tracking_confidence=0.4)
     
     # count=0
+    
+    global exit_count
+    print("스레드 start!!")
+    while not exit_flag.is_set():
 
-    while True:
         message = frame_queue.get()
-        if message==None:
-            print("None Message")
+        if message == None:
+            print("None Processing Error!")
             continue
+        # print(len(frame_queue))
         frame = process_frame(message)
-
         if frame is None:
             break
         image, result = mediapipe_detection(frame, hands)
         
+        if result.multi_hand_landmarks is None:
+            exit_count+=1
+            continue
         if result.multi_hand_landmarks is not None:
             h = 0  # 손 두개 감지 로직을 위한 임시 값
             d1 = np.empty(0)
@@ -135,22 +143,26 @@ def frame_processor():
                     d2 = np.concatenate([angle_label[0]])
 
             d = np.concatenate([d1, d2])
+            print("DEBUG1", len(d))
 
             if len(d) <= 17:
                 d = np.concatenate([d, np.zeros(len(d))])
 
+            print("DEBUG1.1", len(seq))
             seq.append(d)
             # print("debug ",count)
             # count+=1
             if len(seq) < seq_length:  # 시퀀스 최소치가 쌓인 이후부터 판별
                 continue
 
+            print("DEBUG2")
             if len(seq) > seq_length * 100:  # 과도하게 쌓임 방지
                 seq = seq[-seq_length:]
 
             # 시퀀스 데이터를 신경망 모델에 입력으로 사용할 수 있는 형태로 변환
             input_data = np.expand_dims(np.array(seq[-seq_length:], dtype=np.float32), axis=0)
 
+            print("DEBUG3")
             y_pred = model.predict(input_data).squeeze()  # 각 동작에 대한 예측 결과 (각각의 확률)
 
             i_pred = int(np.argmax(y_pred))  # 최댓값 인덱스: 예측값이 가장 높은 값(동작)의 인덱스
@@ -167,14 +179,12 @@ def frame_processor():
             previous = action
             print("인식됨", action)
             seq = []
-            frame_queue = queue.Queue()
-
 
             result_dict = {'result': action}
             result_json = json.dumps(result_dict)
 
             result_queue.put(result_json)
-
+    print("off")
 
 # 안되던 코드 -> 수신, 송신이 자주 겹쳐서 확률적으로 송신 되던 것으로 추정
 
@@ -204,18 +214,39 @@ def frame_processor():
 #         frame_queue.put(None)
 #         result_queue.put(None)
 
+socket_closed = True
 
 async def handle_client(websocket, path):
     try:
+        global exit_count
         while True:
+            if exit_count>20: # 손이 없는 프레임 5개 이상 수신 시 스레드 재시작?
+                exit_count = 0
+                exit_flag.set() # 종료 요청
+                # print("종료 요청")
+                # processor_thread.join() # 대기 
+                # print("종료 성공")
+                exit_flag.clear() # 종료 요청 플래그 초기화
+                socket_closed = True
+                # print("플래그 초기화")
+                print("스레드 종료")
+                while not frame_queue.empty():
+                    frame_queue.get()
+                
+                
+                processor_thread = threading.Thread(target=frame_processor)
+                processor_thread.start()
+
             message = await websocket.recv()
             if message:
                 frame_queue.put(message)
+                # print("PUT")
             if not result_queue.empty():
                 result_json = result_queue.get()
+                print("send?")
                 try:
                     if websocket.open:
-                        print("가주세요..")
+                        # print("send..")
                         await websocket.send(result_json)
                 except Exception as e:
                     print(f"send error: {str(e)}")
@@ -237,5 +268,3 @@ if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main())
     asyncio.get_event_loop().run_forever()
     processor_thread.join()
-
-
