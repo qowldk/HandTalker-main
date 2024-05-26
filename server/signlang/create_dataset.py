@@ -3,7 +3,7 @@ import mediapipe as mp
 import numpy as np
 import time, os
 
-actions = '오다'
+actions = '약'
 seq_length = 30
 secs_for_action = 30
 

@@ -8,6 +8,7 @@ import asyncio
 import websockets
 import queue
 import threading
+import time
 from tensorflow.keras.models import load_model
 
 
@@ -148,6 +149,7 @@ def frame_processor():
                 continue  # 중복 전달 회피
             previous = action
             print("인식됨", action)
+            time.sleep(3)
             seq = []
             frame_queue = queue.Queue() # 작업 리스트 초기화
 
