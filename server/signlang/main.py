@@ -70,7 +70,7 @@ def frame_processor():
     seq = []
     previous = ''
     detected_word = ['','','']
-    detected_word_len = 5
+    detected_word_len = 3
     
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(
@@ -94,15 +94,13 @@ def frame_processor():
             d2 = np.empty(0)
             for res in result.multi_hand_landmarks:  # 감지된 손의 수만큼 반복
                 h += 1
-                joint = np.zeros((23, 3))
+                joint = np.zeros((21, 2))
                 for j, lm in enumerate(res.landmark):
-                    joint[j] = [lm.x, lm.y, lm.z] 
-                joint[21] = [0, 0, 0]
-                joint[22] = [1, 1, 1]
+                    joint[j] = [lm.x, lm.y] 
 
                 # 각 손가락 마디 벡터 계산
-                v1 = joint[[0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19, 21], :3]  # Parent joint
-                v2 = joint[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22], :3]  # Child joint
+                v1 = joint[[0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19], :3]  # Parent joint
+                v2 = joint[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], :3]  # Child joint
                 v = v2 - v1  # [20, 3]
                 
                 # 정규화 (크기 1의 단위벡터로)
@@ -110,19 +108,19 @@ def frame_processor():
 
                 # 내적의 arcos으로 손가락 각 마디의 사이각 계산
                 angle = np.arccos(np.einsum('nt,nt->n',
-                                            v[[0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 0, 16], :],
-                                            v[[1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19, 20, 20], :]))
+                                            v[[0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18], :],
+                                            v[[1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19], :]))
 
                 angle = np.degrees(angle)  # 라디안 -> 도
                 angle_label = np.array([angle], dtype=np.float32)
                 if h == 1:
-                    d1 = np.concatenate([angle_label[0]])
+                    d1 = np.concatenate([joint.flatten(), angle_label[0]])
                 else:
-                    d2 = np.concatenate([angle_label[0]])
+                    d2 = np.concatenate([joint.flatten(), angle_label[0]])
 
             d = np.concatenate([d1, d2])
 
-            if len(d) <= 17: # 한손만 감지될 경우 나머지 손 제로패딩
+            if len(d) <= 57: # 한손만 감지될 경우 나머지 손 제로패딩
                 d = np.concatenate([d, np.zeros(len(d))])
 
             seq.append(d)
@@ -162,10 +160,12 @@ def frame_processor():
 
             if previous == action: 
                 print("인식됨(중복)", action)
+                seq = []
+                frame_queue = queue.Queue() # 작업 리스트 초기화
                 continue  # 중복 전달 회피
             previous = action
             print("인식됨", action)
-            time.sleep(0.7)
+            time.sleep(0.5)
             seq = []
             frame_queue = queue.Queue() # 작업 리스트 초기화
             print("큐 초기화")

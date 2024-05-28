@@ -3,7 +3,7 @@ import mediapipe as mp
 import numpy as np
 import time, os
 
-actions = '어지럽다'
+actions = '모두'
 seq_length = 30
 secs_for_action = 30
 
@@ -53,35 +53,33 @@ while cap.isOpened():
             d2 = np.empty(0)
             for res in result.multi_hand_landmarks:
                 h+=1
-                joint = np.zeros((23, 3))
+                joint = np.zeros((21, 2))
                 for j, lm in enumerate(res.landmark):
-                    joint[j] = [lm.x, lm.y, lm.z]
-                joint[21] = [0, 0, 0]
-                joint[22] = [1, 1, 1]
+                    joint[j] = [lm.x, lm.y]
                 # Compute angles between joints
-                v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19,21], :3] # Parent joint
-                v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22], :3] # Child joint
+                v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19], :3] # Parent joint
+                v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], :3] # Child joint
                 v = v2 - v1 # [20, 3]
                 # Normalize v
                 v = v / np.linalg.norm(v, axis=1)[:, np.newaxis]
 
                 # Get angle using arcos of dot product
                 angle = np.arccos(np.einsum('nt,nt->n',
-                    v[[0,1,2,4,5,6,8,9,10,12,13,14,16,17,18,0,16],:], 
-                    v[[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19,20,20],:])) # [15,]
+                    v[[0,1,2,4,5,6,8,9,10,12,13,14,16,17,18],:], 
+                    v[[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],:])) # [15,] 15+42 = 57
 
                 angle = np.degrees(angle) # Convert radian to degree
 
                 angle_label = np.array([angle], dtype=np.float32)
                 if h==1:
-                    d1 = np.concatenate([angle_label[0]])
+                    d1 = np.concatenate([joint.flatten(), angle_label[0]])
                 else:
-                    d2 = np.concatenate([angle_label[0], [user_idx]])
+                    d2 = np.concatenate([joint.flatten(), angle_label[0], [user_idx]])
 
                 mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS)
 
             d=np.concatenate([d1, d2])
-            if len(d)<=17:
+            if len(d)<=57:
                 d=np.concatenate([d, np.zeros(len(d)), [user_idx]])
             data.append(d)
             # print(data)
@@ -115,7 +113,7 @@ while cap.isOpened():
 
     # Save the sequence data
     np.save(save_data, full_seq_data)
-    file_name = str(user_idx) + '_' + str(action) + '_s_'+str(save_file_num)+'.npy'
+    file_name = str(user_idx) + '_' + str(action) + '_d_'+str(save_file_num)+'.npy'
     frame_data = os.path.join(script_directory, "dataset_frame", file_name)
     break
 
