@@ -3,7 +3,7 @@ import mediapipe as mp
 import numpy as np
 import time, os
 
-actions = '약'
+actions = '어지럽다'
 seq_length = 30
 secs_for_action = 30
 
@@ -84,7 +84,7 @@ while cap.isOpened():
             if len(d)<=17:
                 d=np.concatenate([d, np.zeros(len(d)), [user_idx]])
             data.append(d)
-            print(data)
+            # print(data)
 
         # Draw a black dot at the center of the screen
         cv2.circle(img, (center_x, center_y), 5, (0, 0, 0), -1)

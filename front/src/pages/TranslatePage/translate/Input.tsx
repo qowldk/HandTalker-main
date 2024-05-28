@@ -20,8 +20,8 @@ const Input = forwardRef<ChildProps>((props, ref) => {
   const [isGenerating, setIsGenerating] = useRecoilState(isGeneratingSentence); // LLM API 응답 대기중 여부
 
   const webcamRef = useRef<Webcam>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasPoseRef = useRef<HTMLCanvasElement>(null);
+  // const canvasRef = useRef<HTMLCanvasElement>(null);
+  // const canvasPoseRef = useRef<HTMLCanvasElement>(null);
   const resultsRef = useRef<HolisticResults | null>(null);
 
   const transmission_frequency = 1000/30;  // 8080 전송 주기
@@ -40,10 +40,10 @@ const Input = forwardRef<ChildProps>((props, ref) => {
     setPrevious("");
   };
 
-	useImperativeHandle(ref, () => ({
-	  // 부모 컴포넌트에서 사용할 함수이름
+   useImperativeHandle(ref, () => ({
+     // 부모 컴포넌트에서 사용할 함수이름
     send_words,
-	}));
+   }));
 
   const OutputData = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
@@ -91,58 +91,58 @@ const Input = forwardRef<ChildProps>((props, ref) => {
   }, [capture, webcamRef, OutputData, isChecked]);
 
 
-  const onPoseResults = useCallback((results: HolisticResults) => {
-    const canvasElement = canvasPoseRef.current!;
-    const canvasCtx = canvasElement.getContext("2d");
-    if (canvasCtx === null) {
-      return;
-    }
+  // const onPoseResults = useCallback((results: HolisticResults) => {
+  //   const canvasElement = canvasPoseRef.current!;
+  //   const canvasCtx = canvasElement.getContext("2d");
+  //   if (canvasCtx === null) {
+  //     return;
+  //   }
 
-    canvasCtx.save();
-    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-    // Only overwrite existing pixels.
-    canvasCtx.globalCompositeOperation = "source-in";
-    canvasCtx.fillStyle = "#00FF00";
-    canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+  //   canvasCtx.save();
+  //   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+  //   // Only overwrite existing pixels.
+  //   canvasCtx.globalCompositeOperation = "source-in";
+  //   canvasCtx.fillStyle = "#00FF00";
+  //   canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
 
-    // Only overwrite missing pixels.
-    canvasCtx.globalCompositeOperation = "destination-atop";
-    canvasCtx.drawImage(
-      results.image,
-      0,
-      0,
-      canvasElement.width,
-      canvasElement.height
-    );
+  //   // Only overwrite missing pixels.
+  //   canvasCtx.globalCompositeOperation = "destination-atop";
+  //   canvasCtx.drawImage(
+  //     results.image,
+  //     0,
+  //     0,
+  //     canvasElement.width,
+  //     canvasElement.height
+  //   );
 
-    canvasCtx.globalCompositeOperation = "source-over";
-    drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
-      color: "#00FF00",
-      lineWidth: 4,
-    });
-    drawLandmarks(canvasCtx, results.poseLandmarks, {
-      color: "#FF0000",
-      lineWidth: 2,
-    });
-    drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, {
-      color: "#CC0000",
-      lineWidth: 5,
-    });
-    drawLandmarks(canvasCtx, results.leftHandLandmarks, {
-      color: "#00FF00",
-      lineWidth: 2,
-    });
-    drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, {
-      color: "#00CC00",
-      lineWidth: 5,
-    });
-    drawLandmarks(canvasCtx, results.rightHandLandmarks, {
-      color: "#FF0000",
-      lineWidth: 2,
-    });
-    canvasCtx.restore();
-    resultsRef.current = results;
-  }, []);
+  //   canvasCtx.globalCompositeOperation = "source-over";
+  //   drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
+  //     color: "#00FF00",
+  //     lineWidth: 4,
+  //   });
+  //   drawLandmarks(canvasCtx, results.poseLandmarks, {
+  //     color: "#FF0000",
+  //     lineWidth: 2,
+  //   });
+  //   drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, {
+  //     color: "#CC0000",
+  //     lineWidth: 5,
+  //   });
+  //   drawLandmarks(canvasCtx, results.leftHandLandmarks, {
+  //     color: "#00FF00",
+  //     lineWidth: 2,
+  //   });
+  //   drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, {
+  //     color: "#00CC00",
+  //     lineWidth: 5,
+  //   });
+  //   drawLandmarks(canvasCtx, results.rightHandLandmarks, {
+  //     color: "#FF0000",
+  //     lineWidth: 2,
+  //   });
+  //   canvasCtx.restore();
+  //   resultsRef.current = results;
+  // }, []);
 
   // 초기설정
   useEffect(() => {
@@ -160,7 +160,7 @@ const Input = forwardRef<ChildProps>((props, ref) => {
       minDetectionConfidence: 0.5,
       minTrackingConfidence: 0.5,
     });
-    holistic.onResults(onPoseResults);
+    // holistic.onResults(onPoseResults);
 
     if (
       typeof webcamRef.current !== "undefined" &&
@@ -175,7 +175,7 @@ const Input = forwardRef<ChildProps>((props, ref) => {
       });
       camera.start();
     }
-  }, [onPoseResults]);
+  }, []);
 
   const socketRef = useRef<WebSocket>(new WebSocket("ws://localhost:8080"));
   const socketRef_hands = useRef<WebSocket>(new WebSocket("ws://localhost:8081"));
@@ -299,12 +299,12 @@ const Input = forwardRef<ChildProps>((props, ref) => {
         />
 
         {/* 랜드마크를 손에 표시 */}
-        <canvas
+        {/*<canvas
           ref={canvasPoseRef}
           className="absolute w-[20rem] h-[20rem] md:w-[25rem] xl:w-[37.5rem] md:h-[31.25rem] xl:h-[37.5rem] bg-white"
           width={600}
           height={600}
-        />
+        />*/}
       </div>
     </div>
   );

@@ -69,6 +69,8 @@ def frame_processor():
     global frame_queue
     seq = []
     previous = ''
+    detected_word = ['','','']
+    detected_word_len = 5
     
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(
@@ -139,20 +141,35 @@ def frame_processor():
             i_pred = int(np.argmax(y_pred))  # 최댓값 인덱스: 예측값이 가장 높은 값(동작)의 인덱스
             conf = y_pred[i_pred]  # 가장 확률 높은 동작의 확률
             print("conf? ", conf)
-            if conf < 0.8:  # 80% 이상일 때만 수행
+            if conf < 0.9:  # 90% 이상일 때만 수행
                 continue
 
             action = actions[i_pred]
+            # print("-", action)
+
+            detected_word.append(action)
+            if len(detected_word)>50:
+                detected_word = detected_word[-detected_word_len:]
+            
+            detected = True
+
+            for a in detected_word[-detected_word_len:-1]:
+                if a!=detected_word[-1]:
+                    detected = False
+                    break
+            
+            if not detected: continue
 
             if previous == action: 
                 print("인식됨(중복)", action)
                 continue  # 중복 전달 회피
             previous = action
             print("인식됨", action)
-            time.sleep(3)
+            time.sleep(0.7)
             seq = []
             frame_queue = queue.Queue() # 작업 리스트 초기화
-
+            print("큐 초기화")
+            
             result_dict = {'result': action}
             result_json = json.dumps(result_dict)
 
@@ -163,6 +180,7 @@ def frame_processor():
 async def handle_client(websocket, path):
     try:
         while True:
+            # print(frame_queue.qsize())
             message = await websocket.recv()
             if message:
                 frame_queue.put(message)

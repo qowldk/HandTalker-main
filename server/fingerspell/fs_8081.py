@@ -6,9 +6,6 @@ import websockets
 import os
 import base64
 import mediapipe as mp
-
-
-
 from tensorflow.keras.models import load_model
 
 
@@ -46,12 +43,6 @@ knn.train(angle, cv2.ml.ROW_SAMPLE, label)
 
 
 actions = {
-    # 0: 'ㄱ', 1: 'ㄱ', 2: 'ㄴ', 3: 'ㄴ', 4: 'ㄷ', 5: 'ㄷ', 6: 'ㄹ', 7: 'ㄹ', 8: 'ㅁ', 9: 'ㅁ',
-    # 10: 'ㅂ', 11: 'ㅂ', 12: 'ㅅ', 13: 'ㅅ', 14: 'ㅇ', 15: 'ㅇ', 16: 'ㅈ', 17: 'ㅈ', 18: 'ㅊ',
-    # 19: 'ㅊ', 20: 'ㅋ', 21: 'ㅋ', 22: 'ㅌ', 23: 'ㅌ', 24: 'ㅍ', 25: 'ㅍ', 26: 'ㅎ', 27: 'ㅎ',
-    # 28: 'ㅏ', 29: 'ㅑ', 30: 'ㅓ', 31: 'ㅕ', 32: 'ㅗ', 33: 'ㅛ', 34: 'ㅜ', 35: 'ㅠ', 36: 'ㅡ',
-    # 37: 'ㅣ', 38: 'ㅐ', 39: 'ㅒ', 40: 'ㅔ', 41: 'ㅖ', 42: 'ㅚ', 43: 'ㅟ', 44: 'ㅢ'
-
     0: 'ㄱ', 1: 'ㄴ', 2: 'ㄷ', 3: 'ㄹ', 4: 'ㅁ', 5: 'ㅂ', 6: 'ㅅ', 7: 'ㅇ', 8: 'ㅈ', 9: 'ㅊ',
     10: 'ㅋ', 11: 'ㅌ', 12: 'ㅍ', 13: 'ㅎ',
     14: 'ㅏ', 15: 'ㅑ', 16: 'ㅓ', 17: 'ㅕ', 18: 'ㅗ', 19: 'ㅛ', 20: 'ㅜ', 21: 'ㅠ', 22: 'ㅡ',
@@ -63,7 +54,8 @@ async def finger_spell(websocket, path):
     try:
         previous = '' # 이전 문자
 
-        dc=0 # debug_count
+        detected_fs = ['','','']
+        detected_fs_len = 3
 
         mp_hands = mp.solutions.hands
         hands = mp_hands.Hands( 
@@ -117,6 +109,21 @@ async def finger_spell(websocket, path):
                 predicted_idx = int(results[0][0])
 
                 predicted_gesture = actions.get(predicted_idx, "Unknown Gesture")
+                
+                detected_fs.append(predicted_gesture)
+                if len(detected_fs)>50:
+                    detected_fs = detected_fs[-detected_fs_len:]
+                
+                detected = True
+
+                for fs in detected_fs[-detected_fs_len:-1]:
+                    if fs!=detected_fs[-1]:
+                        detected = False
+                        break
+                
+                if not detected: continue
+
+
                 if previous == predicted_gesture: continue  # 중복 전달 회피  ???
                 previous = predicted_gesture
                 result_dict = {'result': predicted_gesture}
