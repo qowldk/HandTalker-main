@@ -25,11 +25,14 @@ system_role = """
 또 하나의 예로, '머리 아프다 방문하다'를 입력받으면, '머리가 아파서 방문했습니다'와 같이 응답합니다.
 또 하나의 예로, '오늘 진료 가능'을 입력받으면, '오늘 진료 가능할까요?'와 같이 응답합니다.
 만약 하나의 단어만 입력 받는다면 그 단어를 그대로 반환합니다.
+
+병원에서 환자가 의사에게 물어볼만한 질문을 생각하면서 답변을 해주시면 됩니다.
+
 """
 
 def LLM_API(string):
     completion = client.chat.completions.create(
-        model="gpt-4-0613",
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": system_role},
             {"role": "user", "content": string}
