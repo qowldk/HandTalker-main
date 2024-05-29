@@ -131,7 +131,7 @@ def frame_processor():
             if len(seq) > seq_length * 50:  # 메모리 정리
                 seq = seq[-seq_length:]
 
-            # 시퀀스 데이터를 신경망 모델에 입력으로 사용할 수 있는 형태로 변환
+            # 시퀀스 데이터를 신        경망 모델에 입력으로 사용할 수 있는 형태로 변환
             input_data = np.expand_dims(np.array(seq[-seq_length:], dtype=np.float32), axis=0)
 
             y_pred = model.predict(input_data).squeeze()  # 각 동작에 대한 예측 결과 (각각의 확률)
