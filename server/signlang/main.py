@@ -71,6 +71,8 @@ def frame_processor():
     previous = ''
     detected_word = ['','','']
     detected_word_len = 3
+    clear_count=0
+    pre_no_hands=False
     
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(
@@ -89,6 +91,9 @@ def frame_processor():
         image, result = mediapipe_detection(frame, hands)
         
         if result.multi_hand_landmarks is not None:
+            if pre_no_hands:
+                pre_no_hands = False
+                clear_count=0
             h = 0  
             d1 = np.empty(0)
             d2 = np.empty(0)
@@ -174,7 +179,15 @@ def frame_processor():
             result_json = json.dumps(result_dict)
 
             result_queue.put(result_json)
-
+        else:
+            if pre_no_hands:
+                if len(seq)!=0:
+                    clear_count+=1
+                    if clear_count>20:
+                        clear_count = 0
+                        seq=[]
+            else:
+                pre_no_hands=True
 
 # 송수신 스레드
 async def handle_client(websocket, path):
