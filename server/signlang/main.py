@@ -143,7 +143,7 @@ def frame_processor():
 
             i_pred = int(np.argmax(y_pred))  # 최댓값 인덱스: 예측값이 가장 높은 값(동작)의 인덱스
             conf = y_pred[i_pred]  # 가장 확률 높은 동작의 확률
-            print("conf? ", conf)
+            # print("conf? ", conf)
             if conf < 0.9:  # 90% 이상일 때만 수행
                 continue
 
@@ -164,7 +164,7 @@ def frame_processor():
             if not detected: continue
 
             if previous == action: 
-                print("인식됨(중복)", action)
+                # print("인식됨(중복)", action)
                 seq = []
                 frame_queue = queue.Queue() # 작업 리스트 초기화
                 continue  # 중복 전달 회피
@@ -173,18 +173,21 @@ def frame_processor():
             time.sleep(0.5)
             seq = []
             frame_queue = queue.Queue() # 작업 리스트 초기화
-            print("큐 초기화")
+            # print("큐 초기화")
             
             result_dict = {'result': action}
             result_json = json.dumps(result_dict)
 
             result_queue.put(result_json)
         else:
+            # print(clear_count, len(seq))
             if pre_no_hands:
                 if len(seq)!=0:
+                    # print("increasing...")
                     clear_count+=1
-                    if clear_count>20:
+                    if clear_count>50:
                         clear_count = 0
+                        # print("cleared")
                         seq=[]
             else:
                 pre_no_hands=True
